@@ -1,5 +1,6 @@
 import time
 import base64
+import logging
 import pandas as pd
 import numpy as np
 from io import StringIO
@@ -12,6 +13,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 from src.dtos.team_game_dto import TeamGameCreate
 from src.repositories.team_game_repo import TeamGameRepository
 from src.core.database import SessionLocal
+from src.core.config import settings
+from src.core.scraper_utils import strip_url_hash, get_random_user_agent, get_random_proxy, retry_with_backoff
+
+logger = logging.getLogger(__name__)
 
 
 def flatten_pfr_columns(df: pd.DataFrame):
@@ -190,15 +195,36 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
 
 
 async def download_team_gamelog(team: str, year: int):
+    url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
+
+    # Strip hash fragments to avoid 403 errors
+    clean_url = strip_url_hash(url)
+    if clean_url != url:
+        logger.info(f"Stripped hash fragment from URL: {url} -> {clean_url}")
+        url = clean_url
+
     options = Options()
     options.add_argument("--headless=new")
+
+    # Set random user-agent from pool
+    user_agent = get_random_user_agent()
+    options.add_argument(f"user-agent={user_agent}")
+    logger.debug(f"Using user-agent: {user_agent[:50]}...")
+
+    # Configure proxy if enabled
+    proxy = get_random_proxy()
+    if proxy:
+        options.add_argument(f"--proxy-server={proxy}")
+        logger.debug(f"Using proxy: {proxy}")
 
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=options,
     )
 
-    url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
+    # Set page load timeout
+    driver.set_page_load_timeout(settings.SCRAPE_REQUEST_TIMEOUT)
+
     driver.get(url)
     time.sleep(1)
 
@@ -238,8 +264,16 @@ async def download_team_gamelog(team: str, year: int):
 async def scrape_and_store(team: str, year: int):
     db = SessionLocal()
 
+    url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
+
     try:
-        scraped_games = await download_team_gamelog(team, year)
+        # Use retry logic with exponential backoff
+        scraped_games = await retry_with_backoff(
+            download_team_gamelog,
+            team,
+            year,
+            url=url
+        )
         saved = []
 
         for game in scraped_games:
@@ -247,6 +281,7 @@ async def scrape_and_store(team: str, year: int):
             saved_obj = TeamGameRepository.create_or_skip(db, model_obj)
             saved.append(saved_obj)
 
+        logger.info(f"Successfully scraped and stored {len(saved)} games for {team} {year}")
         return saved
 
     finally:

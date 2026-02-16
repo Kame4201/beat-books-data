@@ -7,6 +7,7 @@ then stores them in the database with metadata using the repository layer.
 
 import pandas as pd
 import time
+import logging
 from io import StringIO
 from bs4 import BeautifulSoup, Comment
 from datetime import datetime
@@ -18,8 +19,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth
 
 from src.core.database import SessionLocal
+from src.core.config import settings
+from src.core.scraper_utils import strip_url_hash, get_random_user_agent, get_random_proxy, retry_with_backoff
 from src.repositories.scraped_data_repo import ScrapedDataRepository
 from src.dtos.scraped_data_dto import ScrapedDataMetadataCreate
+
+logger = logging.getLogger(__name__)
 
 
 def read_excel_urls(excel_path: str) -> pd.DataFrame:
@@ -62,6 +67,7 @@ def extract_tables_from_url(url: str) -> List[Dict[str, Any]]:
     Fetch HTML from URL using Selenium and extract all stat tables.
 
     Uses headless Chrome to bypass Pro-Football-Reference bot detection.
+    Includes retry logic, user-agent rotation, and structured logging.
 
     Args:
         url: Pro-Football-Reference URL to scrape
@@ -70,8 +76,14 @@ def extract_tables_from_url(url: str) -> List[Dict[str, Any]]:
         List of dictionaries containing table data and metadata
         Each dict has keys: table_id, table_name, dataframe, source
     """
+    # Strip hash fragments to avoid 403 errors
+    clean_url = strip_url_hash(url)
+    if clean_url != url:
+        logger.info(f"Stripped hash fragment from URL: {url} -> {clean_url}")
+        url = clean_url
+
     # Add delay to be respectful to the server and avoid getting blocked
-    time.sleep(60)  # 60 second delay between requests
+    time.sleep(settings.SCRAPE_DELAY_SECONDS)
 
     # Use Selenium in visible mode to bypass Cloudflare bot detection
     # (Cloudflare blocks headless browsers but allows visible Chrome)
@@ -84,10 +96,24 @@ def extract_tables_from_url(url: str) -> List[Dict[str, Any]]:
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
 
+    # Set random user-agent from pool
+    user_agent = get_random_user_agent()
+    options.add_argument(f"user-agent={user_agent}")
+    logger.debug(f"Using user-agent: {user_agent[:50]}...")
+
+    # Configure proxy if enabled
+    proxy = get_random_proxy()
+    if proxy:
+        options.add_argument(f"--proxy-server={proxy}")
+        logger.debug(f"Using proxy: {proxy}")
+
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=options,
     )
+
+    # Set page load timeout
+    driver.set_page_load_timeout(settings.SCRAPE_REQUEST_TIMEOUT)
 
     # Hide webdriver flag
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -98,12 +124,11 @@ def extract_tables_from_url(url: str) -> List[Dict[str, Any]]:
 
         # Check if still on Cloudflare challenge
         if "Just a moment" in driver.title:
-            print(f"  Waiting for Cloudflare challenge...")
+            logger.info("Waiting for Cloudflare challenge...")
             time.sleep(15)
 
         page_source = driver.page_source
-        print(f"  Page title: {driver.title}")
-        print(f"  Page length: {len(page_source)} chars")
+        logger.info(f"Page loaded - Title: {driver.title}, Length: {len(page_source)} chars")
     finally:
         driver.quit()
 
@@ -266,8 +291,12 @@ async def scrape_from_excel(excel_path: str) -> Dict[str, Any]:
             }
 
             try:
-                # Extract tables from URL
-                tables = extract_tables_from_url(url)
+                # Extract tables from URL with retry logic
+                tables = retry_with_backoff(
+                    extract_tables_from_url,
+                    url,
+                    url=url
+                )
                 results['tables_extracted'] += len(tables)
 
                 # Process each table
