@@ -26,5 +26,7 @@ aiohttp
 
 pandas
 selenium
+selenium-stealth
 webdriver-manager
 openpyxl
+pydantic-settings
