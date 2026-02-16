@@ -49,10 +49,13 @@ tests/             # Unit, integration, E2E tests
 # Run the data service
 uvicorn src.main:app --reload --port 8001
 
-# Database migrations
-alembic upgrade head
-alembic revision --autogenerate -m "description"
-alembic downgrade -1
+# Database migrations (Alembic)
+alembic upgrade head                                    # Apply all pending migrations
+alembic revision --autogenerate -m "description"        # Create new migration (auto-detect changes)
+alembic revision -m "description"                       # Create empty migration (manual)
+alembic downgrade -1                                    # Roll back one migration
+alembic current                                         # Show current revision
+alembic history                                         # Show migration history
 
 # Testing
 pytest
@@ -64,8 +67,9 @@ pytest -m integration # Only integration tests
 ## Database
 - PostgreSQL hosted on Neon.tech
 - Connection via DATABASE_URL environment variable
-- 14+ tables: team_offense, team_defense, passing_stats, rushing_stats, receiving_stats, defense_stats, kicking_stats, punting_stats, return_stats, scoring_stats, games, standings, scraped_data, scraped_data_metadata
-- See Tables.sql for current schema reference
+- Schema managed via Alembic migrations (see `migrations/` directory)
+- 14+ tables: team_offense, team_defense, passing_stats, rushing_stats, receiving_stats, defense_stats, kicking_stats, punting_stats, return_stats, scoring_stats, games, standings, returns, kicking, punting
+- Tables.sql kept as reference only — DO NOT use for deployments
 
 ## Known Issues
 - 403 errors from Pro-Football-Reference when URL contains hash fragments (e.g., #all_team_stats)

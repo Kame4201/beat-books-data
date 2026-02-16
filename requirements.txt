@@ -12,6 +12,7 @@ pydantic[email]
 # Database (you said you're using Postgres now, MySQL later)
 sqlalchemy
 psycopg2-binary
+alembic
 
 # If you plan JWT auth soon
 python-jose
