@@ -26,7 +26,7 @@ def get_team_offense_dataframe(season: int):
     from bs4 import BeautifulSoup, Comment
 
     url = f"https://www.pro-football-reference.com/years/{season}/"
-    res = requests.get(url)
+    res = requests.get(url, timeout=30)
     res.raise_for_status()
 
     soup = BeautifulSoup(res.text, "lxml")

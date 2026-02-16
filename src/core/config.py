@@ -45,7 +45,7 @@ class Settings(BaseSettings):
 
     # App
     LOG_LEVEL: str = "INFO"
-    API_HOST: str = "0.0.0.0"
+    API_HOST: str = "0.0.0.0"  # nosec B104 - configurable via env var
     API_PORT: int = 8001
 
     model_config = {"env_file": ".env"}
