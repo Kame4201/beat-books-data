@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from src.core.database import SessionLocal
 from src.entities.team_offense import TeamOffense
 from src.repositories.team_offense_repo import TeamOffenseRepository
+from src.dtos.team_offense_dto import TeamOffenseCreate
 
 
 def clean_value(v):
@@ -122,7 +123,10 @@ async def scrape_and_store_team_offense(season: int):
 
         saved = []
         for row in parsed:
-            obj = TeamOffense(**row)
+            # Validate input with DTO
+            dto = TeamOffenseCreate(**row)
+            # Convert DTO to entity
+            obj = TeamOffense(**dto.model_dump())
             saved_obj = repo.create(obj, commit=False)
             saved.append(saved_obj)
 
