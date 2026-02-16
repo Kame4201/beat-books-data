@@ -18,6 +18,9 @@ from src.dtos.return_stats_dto import ReturnStatsCreate, ReturnStatsResponse
 from src.dtos.scoring_stats_dto import ScoringStatsCreate, ScoringStatsResponse
 from src.dtos.standings_dto import StandingsCreate, StandingsResponse
 from src.dtos.games_dto import GamesCreate, GamesResponse
+from src.dtos.kicking_dto import KickingCreate, KickingResponse
+from src.dtos.punting_dto import PuntingCreate, PuntingResponse
+from src.dtos.returns_dto import TeamReturnsCreate, TeamReturnsResponse
 
 
 class TestTeamOffenseDTO:
@@ -341,6 +344,138 @@ class TestGamesDTO:
         """Test season must be in valid range."""
         with pytest.raises(ValidationError):
             GamesCreate(season=1800, week=1)
+
+
+class TestKickingDTO:
+    """Tests for team Kicking DTO validation."""
+
+    def test_valid_create(self):
+        """Test creating a valid KickingCreate DTO."""
+        dto = KickingCreate(
+            season=2023,
+            tm="BAL",
+            g=17,
+            fga=35,
+            fgm=32,
+            fg_pct=Decimal("91.4")
+        )
+        assert dto.season == 2023
+        assert dto.tm == "BAL"
+        assert dto.fgm == 32
+
+    def test_season_range_validation(self):
+        """Test season must be between 1920-2100."""
+        with pytest.raises(ValidationError):
+            KickingCreate(season=1900, tm="BAL")
+
+        with pytest.raises(ValidationError):
+            KickingCreate(season=2150, tm="BAL")
+
+    def test_negative_stats_rejected(self):
+        """Test that negative stats are rejected."""
+        with pytest.raises(ValidationError):
+            KickingCreate(season=2023, tm="BAL", fga=-5)
+
+    def test_percentage_validation(self):
+        """Test FG percentage in valid range."""
+        with pytest.raises(ValidationError):
+            KickingCreate(
+                season=2023,
+                tm="BAL",
+                fg_pct=Decimal("150.0")
+            )
+
+    def test_empty_team_name_rejected(self):
+        """Test that empty team name is rejected."""
+        with pytest.raises(ValidationError):
+            KickingCreate(season=2023, tm="")
+
+
+class TestPuntingDTO:
+    """Tests for team Punting DTO validation."""
+
+    def test_valid_create(self):
+        """Test creating a valid PuntingCreate DTO."""
+        dto = PuntingCreate(
+            season=2023,
+            tm="CAR",
+            g=17,
+            pnt=75,
+            yds=3500,
+            ypp=Decimal("46.7")
+        )
+        assert dto.season == 2023
+        assert dto.tm == "CAR"
+        assert dto.pnt == 75
+
+    def test_season_range_validation(self):
+        """Test season must be between 1920-2100."""
+        with pytest.raises(ValidationError):
+            PuntingCreate(season=1900, tm="CAR")
+
+        with pytest.raises(ValidationError):
+            PuntingCreate(season=2150, tm="CAR")
+
+    def test_negative_stats_rejected(self):
+        """Test that negative stats are rejected."""
+        with pytest.raises(ValidationError):
+            PuntingCreate(season=2023, tm="CAR", pnt=-10)
+
+    def test_percentage_validation(self):
+        """Test touchback percentage in valid range."""
+        with pytest.raises(ValidationError):
+            PuntingCreate(
+                season=2023,
+                tm="CAR",
+                tb_pct=Decimal("150.0")
+            )
+
+    def test_empty_team_name_rejected(self):
+        """Test that empty team name is rejected."""
+        with pytest.raises(ValidationError):
+            PuntingCreate(season=2023, tm="")
+
+
+class TestTeamReturnsDTO:
+    """Tests for TeamReturns DTO validation."""
+
+    def test_valid_create(self):
+        """Test creating a valid TeamReturnsCreate DTO."""
+        dto = TeamReturnsCreate(
+            season=2023,
+            tm="BAL",
+            g=17,
+            ret_punt=30,
+            yds_punt=350,
+            ret_kick=25,
+            yds_kick=600,
+            apyd=950
+        )
+        assert dto.season == 2023
+        assert dto.tm == "BAL"
+        assert dto.ret_punt == 30
+        assert dto.apyd == 950
+
+    def test_season_range_validation(self):
+        """Test season must be between 1920-2100."""
+        with pytest.raises(ValidationError):
+            TeamReturnsCreate(season=1900, tm="BAL")
+
+        with pytest.raises(ValidationError):
+            TeamReturnsCreate(season=2150, tm="BAL")
+
+    def test_negative_stats_rejected(self):
+        """Test that negative stats are rejected."""
+        with pytest.raises(ValidationError):
+            TeamReturnsCreate(season=2023, tm="BAL", ret_punt=-5)
+
+        with pytest.raises(ValidationError):
+            TeamReturnsCreate(season=2023, tm="BAL", apyd=-100)
+
+    def test_empty_team_name_rejected(self):
+        """Test that empty team name is rejected."""
+        with pytest.raises(ValidationError):
+            TeamReturnsCreate(season=2023, tm="")
 
 
 class TestDTOResponse:
