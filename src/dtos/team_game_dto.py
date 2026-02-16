@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from datetime import date
 from typing import Optional
 
+
 class TeamGameCreate(BaseModel):
     team_abbr: str
     season: int

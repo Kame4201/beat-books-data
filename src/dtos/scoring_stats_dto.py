@@ -1,6 +1,7 @@
 """
 DTOs for scoring stats operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,10 +9,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class ScoringStatsCreate(BaseModel):
     """DTO for creating scoring stats records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     rk: Optional[int] = Field(None, ge=0, description="Rank")
-    player_name: str = Field(..., min_length=1, max_length=128, description="Player name")
+    player_name: str = Field(
+        ..., min_length=1, max_length=128, description="Player name"
+    )
     age: Optional[int] = Field(None, ge=0, description="Player age")
     tm: str = Field(..., min_length=1, max_length=64, description="Team name")
     pos: Optional[str] = Field(None, max_length=16, description="Position")
@@ -24,12 +28,16 @@ class ScoringStatsCreate(BaseModel):
     pr_td: Optional[int] = Field(None, ge=0, description="Punt return touchdowns")
     kr_td: Optional[int] = Field(None, ge=0, description="Kickoff return touchdowns")
     fr_td: Optional[int] = Field(None, ge=0, description="Fumble return touchdowns")
-    int_td: Optional[int] = Field(None, ge=0, description="Interception return touchdowns")
+    int_td: Optional[int] = Field(
+        None, ge=0, description="Interception return touchdowns"
+    )
     oth_td: Optional[int] = Field(None, ge=0, description="Other touchdowns")
     all_td: Optional[int] = Field(None, ge=0, description="All touchdowns")
 
     two_pm: Optional[int] = Field(None, ge=0, description="Two-point conversions made")
-    d2p: Optional[int] = Field(None, ge=0, description="Defensive two-point conversions")
+    d2p: Optional[int] = Field(
+        None, ge=0, description="Defensive two-point conversions"
+    )
 
     xpm: Optional[int] = Field(None, ge=0, description="Extra points made")
     xpa: Optional[int] = Field(None, ge=0, description="Extra point attempts")
@@ -43,6 +51,7 @@ class ScoringStatsCreate(BaseModel):
 
 class ScoringStatsResponse(ScoringStatsCreate):
     """DTO for scoring stats response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

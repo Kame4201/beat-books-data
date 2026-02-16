@@ -1,6 +1,7 @@
 """
 DTOs for scraped data operations.
 """
+
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
@@ -8,6 +9,7 @@ from typing import Optional
 
 class ScrapedDataMetadataCreate(BaseModel):
     """DTO for creating scraped data metadata records."""
+
     source_url: str
     table_id: str
     table_name: Optional[str] = None
@@ -21,6 +23,7 @@ class ScrapedDataMetadataCreate(BaseModel):
 
 class TableInfo(BaseModel):
     """DTO for table information extracted from URLs."""
+
     table_id: str
     table_name: str
     source: str  # 'visible' or 'comment'

@@ -2,6 +2,7 @@
 Entity for tracking scraped data metadata.
 This tracks what URLs have been scraped and when.
 """
+
 from __future__ import annotations
 
 from sqlalchemy import Column, Integer, String, DateTime, Text
@@ -18,7 +19,8 @@ class ScrapedData(Base):
 
     This table tracks what was scraped, when, and with what metadata.
     """
-    __tablename__ = 'scraped_data_metadata'
+
+    __tablename__ = "scraped_data_metadata"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_url = Column(Text, nullable=False, index=True)

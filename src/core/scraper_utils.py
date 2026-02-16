@@ -28,14 +28,16 @@ def strip_url_hash(url: str) -> str:
     """
     parsed = urlparse(url)
     # Reconstruct URL without fragment
-    return urlunparse((
-        parsed.scheme,
-        parsed.netloc,
-        parsed.path,
-        parsed.params,
-        parsed.query,
-        ''  # Remove fragment
-    ))
+    return urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            "",  # Remove fragment
+        )
+    )
 
 
 def get_random_user_agent() -> str:
@@ -66,7 +68,7 @@ def retry_with_backoff(
     max_retries: Optional[int] = None,
     retry_delays: Optional[List[int]] = None,
     url: Optional[str] = None,
-    **kwargs
+    **kwargs,
 ) -> Any:
     """
     Execute a function with exponential backoff retry logic.
@@ -105,7 +107,7 @@ def retry_with_backoff(
                     "url": url,
                     "attempt": attempt + 1,
                     "max_retries": max_retries,
-                }
+                },
             )
 
             result = func(*args, **kwargs)
@@ -118,7 +120,7 @@ def retry_with_backoff(
                     "attempt": attempt + 1,
                     "duration_seconds": round(duration, 2),
                     "status": "success",
-                }
+                },
             )
 
             return result
@@ -137,7 +139,7 @@ def retry_with_backoff(
                     "status": "failure",
                     "error": str(e),
                     "error_type": type(e).__name__,
-                }
+                },
             )
 
             # If this wasn't the last attempt, wait before retrying
@@ -155,7 +157,7 @@ def retry_with_backoff(
                         "url": url,
                         "retry_delay_seconds": delay,
                         "next_attempt": attempt + 2,
-                    }
+                    },
                 )
                 time.sleep(delay)
 
@@ -167,7 +169,7 @@ def retry_with_backoff(
             "status": "failed",
             "final_error": str(last_exception),
             "final_error_type": type(last_exception).__name__,
-        }
+        },
     )
 
     if last_exception is not None:

@@ -1,6 +1,7 @@
 """
 DTOs for games operations.
 """
+
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class GamesCreate(BaseModel):
     """DTO for creating games records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     week: Optional[int] = Field(None, ge=0, description="Week number")
@@ -27,6 +29,7 @@ class GamesCreate(BaseModel):
 
 class GamesResponse(GamesCreate):
     """DTO for games response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

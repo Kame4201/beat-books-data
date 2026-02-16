@@ -1,6 +1,7 @@
 """
 DTOs for defense stats operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,10 +9,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class DefenseStatsCreate(BaseModel):
     """DTO for creating defense stats records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     rk: Optional[int] = Field(None, ge=0, description="Rank")
-    player_name: str = Field(..., min_length=1, max_length=128, description="Player name")
+    player_name: str = Field(
+        ..., min_length=1, max_length=128, description="Player name"
+    )
     age: Optional[int] = Field(None, ge=0, description="Player age")
     tm: str = Field(..., min_length=1, max_length=64, description="Team name")
     pos: Optional[str] = Field(None, max_length=16, description="Position")
@@ -21,7 +25,9 @@ class DefenseStatsCreate(BaseModel):
     ints: Optional[int] = Field(None, ge=0, description="Interceptions")
     int_yds: Optional[int] = Field(None, ge=0, description="Interception yards")
     int_td: Optional[int] = Field(None, ge=0, description="Interception touchdowns")
-    int_lng: Optional[int] = Field(None, ge=0, description="Longest interception return")
+    int_lng: Optional[int] = Field(
+        None, ge=0, description="Longest interception return"
+    )
     pd: Optional[int] = Field(None, ge=0, description="Passes defended")
     ff: Optional[int] = Field(None, ge=0, description="Forced fumbles")
     fmb: Optional[int] = Field(None, ge=0, description="Fumbles")
@@ -40,6 +46,7 @@ class DefenseStatsCreate(BaseModel):
 
 class DefenseStatsResponse(DefenseStatsCreate):
     """DTO for defense stats response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

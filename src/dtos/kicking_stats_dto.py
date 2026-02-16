@@ -1,6 +1,7 @@
 """
 DTOs for kicking stats operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,10 +9,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class KickingStatsCreate(BaseModel):
     """DTO for creating kicking stats records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     rk: Optional[int] = Field(None, ge=0, description="Rank")
-    player_name: str = Field(..., min_length=1, max_length=128, description="Player name")
+    player_name: str = Field(
+        ..., min_length=1, max_length=128, description="Player name"
+    )
     age: Optional[int] = Field(None, ge=0, description="Player age")
     tm: str = Field(..., min_length=1, max_length=64, description="Team name")
     pos: Optional[str] = Field(None, max_length=16, description="Position")
@@ -37,17 +41,22 @@ class KickingStatsCreate(BaseModel):
     fg_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="FG percentage")
     xpa: Optional[int] = Field(None, ge=0, description="Extra point attempts")
     xpm: Optional[int] = Field(None, ge=0, description="Extra points made")
-    xp_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="Extra point percentage")
+    xp_pct: Optional[Decimal] = Field(
+        None, ge=0, le=100, description="Extra point percentage"
+    )
 
     ko: Optional[int] = Field(None, ge=0, description="Kickoffs")
     ko_yds: Optional[int] = Field(None, ge=0, description="Kickoff yards")
     tb: Optional[int] = Field(None, ge=0, description="Touchbacks")
-    tb_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="Touchback percentage")
+    tb_pct: Optional[Decimal] = Field(
+        None, ge=0, le=100, description="Touchback percentage"
+    )
     ko_avg: Optional[Decimal] = Field(None, ge=0, description="Kickoff average")
 
 
 class KickingStatsResponse(KickingStatsCreate):
     """DTO for kicking stats response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

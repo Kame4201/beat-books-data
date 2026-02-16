@@ -9,7 +9,6 @@ async def read_root():
     return {"Hello": "World"}
 
 
-
 @app.get("/scrape/{team}/{year}")
 async def scrape_data(team: str, year: int):
     """
@@ -25,10 +24,8 @@ async def scrape_data(team: str, year: int):
     return data
 
 
-
 @app.get("/scrape/{year}")
 async def scrape_team_offense(year: int):
-
 
     data = await team_offense_service.scrape_and_store_team_offense(year)
     return data
