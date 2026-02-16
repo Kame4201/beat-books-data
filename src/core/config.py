@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     """Centralized configuration for beat-books-data service."""
 
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = ""
 
     # Scraping
     SCRAPE_DELAY_SECONDS: int = 60

@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import text, inspect
+from sqlalchemy import text, inspect, Inspector
 from typing import List
 
 from src.entities.scraped_data import ScrapedData
@@ -36,9 +36,13 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
 
         This table tracks what URLs have been scraped and when.
         """
-        inspector = inspect(self.session.bind)
+        bind = self.session.bind
+        assert bind is not None, "Session is not bound to an engine"
+        inspector = inspect(bind)
+        if not isinstance(inspector, Inspector):
+                raise RuntimeError("Expected an Inspector instance")
         if not inspector.has_table('scraped_data_metadata'):
-            ScrapedData.metadata.create_all(self.session.bind)
+                ScrapedData.metadata.create_all(bind)
 
     def track_scraped_data(self, metadata: ScrapedDataMetadataCreate) -> ScrapedData:
         """
@@ -85,7 +89,10 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
         Returns:
             True if table exists, False otherwise
         """
-        inspector = inspect(self.session.bind)
+        bind = self.session.bind
+        assert bind is not None, "Session is not bound to an engine"
+        inspector = inspect(bind)
+        assert isinstance(inspector, Inspector)
         return inspector.has_table(table_name)
 
     def create_dynamic_table(self, table_name: str, df: pd.DataFrame) -> None:
@@ -152,9 +159,11 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
         clean_table_name = self.clean_identifier(table_name)
 
         # Check if table has source_url column
-        inspector = inspect(self.session.bind)
+        bind = self.session.bind
+        assert bind is not None, "Session is not bound to an engine"
+        inspector = inspect(bind)
+        assert isinstance(inspector, Inspector)
         if not inspector.has_table(clean_table_name):
-            return 0
 
         columns = [col['name'] for col in inspector.get_columns(clean_table_name)]
         if 'source_url' not in columns:

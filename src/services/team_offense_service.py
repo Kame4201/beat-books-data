@@ -42,6 +42,8 @@ def get_team_offense_dataframe(season: int):
 
     if table is None:
         raise Exception("Could not find team_stats table")
+    from bs4 import Tag
+      assert isinstance(table, Tag)
 
     rows = []
 
