@@ -164,7 +164,7 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
         inspector = inspect(bind)
         assert isinstance(inspector, Inspector)
         if not inspector.has_table(clean_table_name):
-
+            return 0
         columns = [col['name'] for col in inspector.get_columns(clean_table_name)]
         if 'source_url' not in columns:
             return 0
