@@ -11,9 +11,7 @@ from .base import Base
 
 class Standings(Base):
     __tablename__ = "standings"
-    __table_args__ = (
-        UniqueConstraint("tm", "season", name="uq_standings_tm_season"),
-    )
+    __table_args__ = (UniqueConstraint("tm", "season", name="uq_standings_tm_season"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     season: Mapped[Optional[int]] = mapped_column(Integer)

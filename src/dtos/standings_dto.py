@@ -1,6 +1,7 @@
 """
 DTOs for standings operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class StandingsCreate(BaseModel):
     """DTO for creating standings records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     tm: str = Field(..., min_length=1, max_length=64, description="Team name")
@@ -27,6 +29,7 @@ class StandingsCreate(BaseModel):
 
 class StandingsResponse(StandingsCreate):
     """DTO for standings response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

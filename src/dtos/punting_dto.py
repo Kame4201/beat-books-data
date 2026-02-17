@@ -1,6 +1,7 @@
 """
 DTOs for team punting operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class PuntingCreate(BaseModel):
     """DTO for creating team punting records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     rk: Optional[int] = Field(None, ge=0, description="Rank")
@@ -22,14 +24,19 @@ class PuntingCreate(BaseModel):
     nyp: Optional[Decimal] = Field(None, ge=0, description="Net yards per punt")
     lng: Optional[int] = Field(None, ge=0, description="Longest punt")
     tb: Optional[int] = Field(None, ge=0, description="Touchbacks")
-    tb_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="Touchback percentage")
+    tb_pct: Optional[Decimal] = Field(
+        None, ge=0, le=100, description="Touchback percentage"
+    )
     in20: Optional[int] = Field(None, ge=0, description="Punts inside 20")
-    in20_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="Inside 20 percentage")
+    in20_pct: Optional[Decimal] = Field(
+        None, ge=0, le=100, description="Inside 20 percentage"
+    )
     blck: Optional[int] = Field(None, ge=0, description="Blocked punts")
 
 
 class PuntingResponse(PuntingCreate):
     """DTO for team punting response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

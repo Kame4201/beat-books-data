@@ -12,7 +12,9 @@ from .base import Base
 class ReturnStats(Base):
     __tablename__ = "return_stats"
     __table_args__ = (
-        UniqueConstraint("player_name", "season", "tm", name="uq_return_stats_player_season_tm"),
+        UniqueConstraint(
+            "player_name", "season", "tm", name="uq_return_stats_player_season_tm"
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

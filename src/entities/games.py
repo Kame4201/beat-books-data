@@ -12,7 +12,13 @@ from .base import Base
 class Games(Base):
     __tablename__ = "games"
     __table_args__ = (
-        UniqueConstraint("season", "week", "winner", "loser", name="uq_games_season_week_winner_loser"),
+        UniqueConstraint(
+            "season",
+            "week",
+            "winner",
+            "loser",
+            name="uq_games_season_week_winner_loser",
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

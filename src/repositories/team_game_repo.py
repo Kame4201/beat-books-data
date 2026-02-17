@@ -3,15 +3,20 @@ from sqlalchemy.orm import Session
 from src.entities.team_game import TeamGame
 from src.dtos.team_game_dto import TeamGameCreate
 
+
 class TeamGameRepository:
 
     @staticmethod
     def get_by_unique_key(db: Session, team_abbr: str, season: int, week: int):
-        return db.query(TeamGame).filter(
-            TeamGame.team_abbr == team_abbr,
-            TeamGame.season == season,
-            TeamGame.week == week
-        ).first()
+        return (
+            db.query(TeamGame)
+            .filter(
+                TeamGame.team_abbr == team_abbr,
+                TeamGame.season == season,
+                TeamGame.week == week,
+            )
+            .first()
+        )
 
     @staticmethod
     def create(db: Session, obj: TeamGameCreate):

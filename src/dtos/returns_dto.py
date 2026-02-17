@@ -1,6 +1,7 @@
 """
 DTOs for team returns operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class TeamReturnsCreate(BaseModel):
     """DTO for creating team returns records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     rk: Optional[int] = Field(None, ge=0, description="Rank")
@@ -24,13 +26,16 @@ class TeamReturnsCreate(BaseModel):
     yds_kick: Optional[int] = Field(None, ge=0, description="Kickoff return yards")
     td_kick: Optional[int] = Field(None, ge=0, description="Kickoff return touchdowns")
     lng_kick: Optional[int] = Field(None, ge=0, description="Longest kickoff return")
-    ypr_kick: Optional[Decimal] = Field(None, ge=0, description="Yards per kickoff return")
+    ypr_kick: Optional[Decimal] = Field(
+        None, ge=0, description="Yards per kickoff return"
+    )
 
     apyd: Optional[int] = Field(None, ge=0, description="All-purpose yards")
 
 
 class TeamReturnsResponse(TeamReturnsCreate):
     """DTO for team returns response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

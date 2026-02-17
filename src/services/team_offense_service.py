@@ -61,7 +61,9 @@ def get_team_offense_dataframe(season: int):
         row = [c.text.strip() for c in cells]
         rows.append(row)
 
-    headers = [th.get_text(strip=True) for th in table.find_all("th")][1:len(rows[0])+1]
+    headers = [th.get_text(strip=True) for th in table.find_all("th")][
+        1 : len(rows[0]) + 1
+    ]
 
     df = pd.DataFrame(rows, columns=headers)
 

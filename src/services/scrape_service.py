@@ -14,7 +14,12 @@ from src.dtos.team_game_dto import TeamGameCreate
 from src.repositories.team_game_repo import TeamGameRepository
 from src.core.database import SessionLocal
 from src.core.config import settings
-from src.core.scraper_utils import strip_url_hash, get_random_user_agent, get_random_proxy, retry_with_backoff
+from src.core.scraper_utils import (
+    strip_url_hash,
+    get_random_user_agent,
+    get_random_proxy,
+    retry_with_backoff,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +50,7 @@ def flatten_pfr_columns(df: pd.DataFrame):
     df.columns = new_cols
     return df
 
+
 def clean_value(v):
     """Convert pandas/numpy types -> pure Python, handle NaN."""
     if isinstance(v, pd.Series):
@@ -64,6 +70,7 @@ def clean_value(v):
         return v.item()
 
     return v
+
 
 def parse_xlsx_to_games(excel_bytes: bytes, team: str):
     # Convert bytes → string
@@ -120,7 +127,6 @@ def extract_excel_bytes_from_dlink(driver):
     containing base64 Excel data. Extract the bytes.
     """
 
-    
     dlink = driver.find_element(By.ID, "dlink")
     href = dlink.get_attribute("href")
 
@@ -132,6 +138,7 @@ def extract_excel_bytes_from_dlink(driver):
     excel_bytes = base64.b64decode(b64data)
 
     return excel_bytes
+
 
 def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
     # ---- DATE PARSING ----
@@ -145,7 +152,7 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
             date_val = None
 
     team = scraped["team"]
-    opp  = scraped.get("opponent")
+    opp = scraped.get("opponent")
     result = scraped.get("result")
 
     # ---- WINNER / LOSER LOGIC ----
@@ -156,8 +163,8 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
         pts_l = scraped.get("opp_score")
         yds_w = scraped.get("tot_yards_for")
         yds_l = scraped.get("tot_yards_against")
-        to_w  = scraped.get("turnovers")
-        to_l  = None
+        to_w = scraped.get("turnovers")
+        to_l = None
 
     elif result == "L":
         winner = opp
@@ -166,8 +173,8 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
         pts_l = scraped.get("team_score")
         yds_w = scraped.get("tot_yards_against")
         yds_l = scraped.get("tot_yards_for")
-        to_w  = None
-        to_l  = scraped.get("turnovers")
+        to_w = None
+        to_l = scraped.get("turnovers")
 
     else:
         # Not a real game (bye week, canceled, missing result)
@@ -182,7 +189,6 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
         day=scraped.get("day"),
         game_date=date_val,
         game_time=scraped.get("time"),
-
         winner=winner,
         loser=loser,
         pts_w=pts_w,
@@ -230,8 +236,7 @@ async def download_team_gamelog(team: str, year: int):
 
     # Scroll to the Schedule section
     section = driver.find_element(
-        By.XPATH,
-        "//h2[contains(text(), 'Schedule')]/parent::div"
+        By.XPATH, "//h2[contains(text(), 'Schedule')]/parent::div"
     )
     driver.execute_script("arguments[0].scrollIntoView(true);", section)
     time.sleep(1)
@@ -261,6 +266,7 @@ async def download_team_gamelog(team: str, year: int):
     # Parse direct bytes into Python objects
     return parse_xlsx_to_games(excel_bytes, team)
 
+
 async def scrape_and_store(team: str, year: int):
     db = SessionLocal()
 
@@ -269,10 +275,7 @@ async def scrape_and_store(team: str, year: int):
     try:
         # Use retry logic with exponential backoff
         scraped_games = await retry_with_backoff(
-            download_team_gamelog,
-            team,
-            year,
-            url=url
+            download_team_gamelog, team, year, url=url
         )
         saved = []
 
@@ -281,10 +284,10 @@ async def scrape_and_store(team: str, year: int):
             saved_obj = TeamGameRepository.create_or_skip(db, model_obj)
             saved.append(saved_obj)
 
-        logger.info(f"Successfully scraped and stored {len(saved)} games for {team} {year}")
+        logger.info(
+            f"Successfully scraped and stored {len(saved)} games for {team} {year}"
+        )
         return saved
 
     finally:
         db.close()
-
-

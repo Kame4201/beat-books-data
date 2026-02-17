@@ -1,6 +1,7 @@
 """
 DTOs for team offense operations.
 """
+
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class TeamOffenseCreate(BaseModel):
     """DTO for creating team offense records."""
+
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     rk: Optional[int] = Field(None, ge=0, description="Rank")
@@ -26,7 +28,9 @@ class TeamOffenseCreate(BaseModel):
     yds_pass: Optional[int] = Field(None, ge=0, description="Passing yards")
     td_pass: Optional[int] = Field(None, ge=0, description="Passing touchdowns")
     ints: Optional[int] = Field(None, ge=0, description="Interceptions")
-    nypa: Optional[Decimal] = Field(None, ge=0, description="Net yards per pass attempt")
+    nypa: Optional[Decimal] = Field(
+        None, ge=0, description="Net yards per pass attempt"
+    )
     firstd_pass: Optional[int] = Field(None, ge=0, description="First downs by passing")
 
     att_rush: Optional[int] = Field(None, ge=0, description="Rush attempts")
@@ -38,13 +42,18 @@ class TeamOffenseCreate(BaseModel):
     pen: Optional[int] = Field(None, ge=0, description="Penalties")
     yds_pen: Optional[int] = Field(None, ge=0, description="Penalty yards")
     firstpy: Optional[int] = Field(None, ge=0, description="First downs by penalty")
-    sc_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="Scoring percentage")
-    to_pct: Optional[Decimal] = Field(None, ge=0, le=100, description="Turnover percentage")
+    sc_pct: Optional[Decimal] = Field(
+        None, ge=0, le=100, description="Scoring percentage"
+    )
+    to_pct: Optional[Decimal] = Field(
+        None, ge=0, le=100, description="Turnover percentage"
+    )
     opea: Optional[Decimal] = Field(None, description="Offensive expected points added")
 
 
 class TeamOffenseResponse(TeamOffenseCreate):
     """DTO for team offense response."""
+
     id: int = Field(..., description="Record ID")
 
     model_config = ConfigDict(from_attributes=True)

@@ -12,7 +12,11 @@ class Settings(BaseSettings):
     SCRAPE_DELAY_SECONDS: int = 60
     SCRAPE_REQUEST_TIMEOUT: int = 30  # seconds
     SCRAPE_MAX_RETRIES: int = 3
-    SCRAPE_RETRY_DELAYS: List[int] = [30, 60, 120]  # exponential backoff delays in seconds
+    SCRAPE_RETRY_DELAYS: List[int] = [
+        30,
+        60,
+        120,
+    ]  # exponential backoff delays in seconds
 
     # User-Agent rotation pool (10+ browser-like user agents)
     SCRAPE_USER_AGENTS: List[str] = [
@@ -31,7 +35,9 @@ class Settings(BaseSettings):
 
     # Proxy rotation (optional)
     SCRAPE_USE_PROXY: bool = False
-    SCRAPE_PROXY_LIST: List[str] = []  # Format: ["http://proxy1:port", "http://proxy2:port"]
+    SCRAPE_PROXY_LIST: List[str] = (
+        []
+    )  # Format: ["http://proxy1:port", "http://proxy2:port"]
 
     # Odds API (Phase 2)
     ODDS_API_KEY: str = ""
