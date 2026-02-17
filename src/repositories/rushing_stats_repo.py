@@ -12,7 +12,15 @@ class RushingStatsRepository(BaseRepository[RushingStats]):
     def __init__(self, session: Session) -> None:
         super().__init__(session=session, model=RushingStats)
 
-    def search_players(self, query: str, season: Optional[int] = None, position: Optional[str] = None, *, limit: int = 50, offset: int = 0) -> list[RushingStats]:
+    def search_players(
+        self,
+        query: str,
+        season: Optional[int] = None,
+        position: Optional[str] = None,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[RushingStats]:
         """Search for players by name with optional filters."""
         stmt = select(self.model).where(self.model.player_name.ilike(f"%{query}%"))
 

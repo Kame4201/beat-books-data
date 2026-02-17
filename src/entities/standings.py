@@ -11,16 +11,14 @@ from .base import Base
 
 class Standings(Base):
     __tablename__ = "standings"
-    __table_args__ = (
-        UniqueConstraint("tm", "season", name="uq_standings_tm_season"),
-    )
+    __table_args__ = (UniqueConstraint("tm", "season", name="uq_standings_tm_season"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     season: Mapped[Optional[int]] = mapped_column(Integer)
 
     tm: Mapped[Optional[str]] = mapped_column(String(64))
     w: Mapped[Optional[int]] = mapped_column(Integer)
-    losses: Mapped[Optional[int]] = mapped_column("l",Integer)
+    losses: Mapped[Optional[int]] = mapped_column("l", Integer)
     t: Mapped[Optional[int]] = mapped_column(Integer)
     win_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 3))
     pf: Mapped[Optional[int]] = mapped_column(Integer)
