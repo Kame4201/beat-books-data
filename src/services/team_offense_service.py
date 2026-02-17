@@ -23,7 +23,7 @@ def clean_value(v):
 
 def get_team_offense_dataframe(season: int):
     import requests
-    from bs4 import BeautifulSoup, Comment
+    from bs4 import BeautifulSoup, Comment, Tag
 
     url = f"https://www.pro-football-reference.com/years/{season}/"
     res = requests.get(url, timeout=30)
@@ -42,6 +42,8 @@ def get_team_offense_dataframe(season: int):
 
     if table is None:
         raise Exception("Could not find team_stats table")
+
+    assert isinstance(table, Tag)
 
     rows = []
 
