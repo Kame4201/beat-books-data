@@ -171,13 +171,15 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
             return 0
 
         try:
-            delete_sql = text(f"DELETE FROM {clean_table_name} WHERE source_url = :url")
+             delete_sql = text(  # nosec B608 - clean_table_name is sanitized by clean_identifier
+                  f"DELETE FROM {clean_table_name} WHERE source_url = :url"
+              )
             result = self.session.execute(delete_sql, {"url": source_url})
             self.session.commit()
-            return result.rowcount
+            return result.rowcount # type: ignore[attr-defined]
         except Exception as e:
             self.session.rollback()
-            print(f"Warning: Could not delete from {clean_table_name}: {e}")
+             print(f"Warning: Could not delete from {clean_table_name}: {e}")  # nosec B608
             return 0
 
     @staticmethod
@@ -239,10 +241,12 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
                 values.append(converted)
 
             # Build and execute insert statement
-            insert_sql = text(f"""
-                INSERT INTO {clean_table_name} ({', '.join(clean_cols)})
-                VALUES ({', '.join(placeholders)})
-            """)
+             insert_sql = text(  # nosec B608 - clean_table_name is sanitized by clean_identifier
+                    f"""
+                    INSERT INTO {clean_table_name} ({', '.join(clean_cols)})
+                    VALUES ({', '.join(placeholders)})
+                """
+                )
 
             params = {f"val{idx}": val for idx, val in enumerate(values)}
 
