@@ -172,8 +172,8 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
             return 0
 
         try:
-            delete_sql = text(  # nosec B608
-                f"DELETE FROM {clean_table_name} WHERE source_url = :url"
+            delete_sql = text(
+                f"DELETE FROM {clean_table_name} WHERE source_url = :url"  # nosec B608
             )
             result = self.session.execute(delete_sql, {"url": source_url})
             self.session.commit()
@@ -244,8 +244,8 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
                 values.append(converted)
 
             # Build and execute insert statement
-            insert_sql = text(  # nosec B608
-                f"INSERT INTO {clean_table_name} ({', '.join(clean_cols)}) "
+            insert_sql = text(
+                f"INSERT INTO {clean_table_name} ({', '.join(clean_cols)}) "  # nosec B608
                 f"VALUES ({', '.join(placeholders)})"
             )
 
