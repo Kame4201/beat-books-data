@@ -6,13 +6,14 @@ This repository handles:
 2. Dynamic table creation for scraped data
 3. Idempotent upserts of scraped data
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import text, inspect
-from typing import Dict, Any, List
+from sqlalchemy import text, inspect, Inspector
+from typing import List
 
 from src.entities.scraped_data import ScrapedData
 from src.repositories.base_repo import BaseRepository
@@ -36,9 +37,13 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
 
         This table tracks what URLs have been scraped and when.
         """
-        inspector = inspect(self.session.bind)
-        if not inspector.has_table('scraped_data_metadata'):
-            ScrapedData.metadata.create_all(self.session.bind)
+        bind = self.session.bind
+        assert bind is not None
+        inspector = inspect(bind)
+        if not isinstance(inspector, Inspector):
+            raise RuntimeError("Expected Inspector")
+        if not inspector.has_table("scraped_data_metadata"):
+            ScrapedData.metadata.create_all(bind)
 
     def track_scraped_data(self, metadata: ScrapedDataMetadataCreate) -> ScrapedData:
         """
@@ -59,7 +64,7 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
             entity_type=metadata.entity_type,
             table_type=metadata.table_type,
             rows_scraped=metadata.rows_scraped,
-            source_type=metadata.source_type
+            source_type=metadata.source_type,
         )
         return self.create(entity, commit=True)
 
@@ -73,7 +78,7 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
         Returns:
             Cleaned identifier (alphanumeric and underscores only)
         """
-        return ''.join(c if c.isalnum() or c == '_' else '_' for c in str(name).lower())
+        return "".join(c if c.isalnum() or c == "_" else "_" for c in str(name).lower())
 
     def table_exists(self, table_name: str) -> bool:
         """
@@ -85,7 +90,10 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
         Returns:
             True if table exists, False otherwise
         """
-        inspector = inspect(self.session.bind)
+        bind = self.session.bind
+        assert bind is not None
+        inspector = inspect(bind)
+        assert isinstance(inspector, Inspector)
         return inspector.has_table(table_name)
 
     def create_dynamic_table(self, table_name: str, df: pd.DataFrame) -> None:
@@ -152,22 +160,29 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
         clean_table_name = self.clean_identifier(table_name)
 
         # Check if table has source_url column
-        inspector = inspect(self.session.bind)
+        bind = self.session.bind
+        assert bind is not None
+        inspector = inspect(bind)
+        assert isinstance(inspector, Inspector)
         if not inspector.has_table(clean_table_name):
             return 0
 
-        columns = [col['name'] for col in inspector.get_columns(clean_table_name)]
-        if 'source_url' not in columns:
+        columns = [col["name"] for col in inspector.get_columns(clean_table_name)]
+        if "source_url" not in columns:
             return 0
 
         try:
-            delete_sql = text(f"DELETE FROM {clean_table_name} WHERE source_url = :url")
+            delete_sql = text(
+                f"DELETE FROM {clean_table_name} WHERE source_url = :url"  # nosec B608
+            )
             result = self.session.execute(delete_sql, {"url": source_url})
             self.session.commit()
-            return result.rowcount
+            return result.rowcount  # type: ignore[attr-defined]
         except Exception as e:
             self.session.rollback()
-            print(f"Warning: Could not delete from {clean_table_name}: {e}")
+            print(
+                f"Warning: Could not delete from {clean_table_name}: {e}"  # nosec B608
+            )
             return 0
 
     @staticmethod
@@ -229,10 +244,10 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
                 values.append(converted)
 
             # Build and execute insert statement
-            insert_sql = text(f"""
-                INSERT INTO {clean_table_name} ({', '.join(clean_cols)})
-                VALUES ({', '.join(placeholders)})
-            """)
+            insert_sql = text(
+                f"INSERT INTO {clean_table_name} ({', '.join(clean_cols)}) "  # nosec B608
+                f"VALUES ({', '.join(placeholders)})"
+            )
 
             params = {f"val{idx}": val for idx, val in enumerate(values)}
 
@@ -263,8 +278,8 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
             Number of rows inserted
         """
         # Delete existing rows from same source_url(s)
-        if 'source_url' in df.columns:
-            source_urls = df['source_url'].unique()
+        if "source_url" in df.columns:
+            source_urls = df["source_url"].unique()
             for source_url in source_urls:
                 self.delete_by_source_url(table_name, source_url)
 
@@ -282,6 +297,7 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
             List of ScrapedData entities
         """
         from sqlalchemy import select
+
         stmt = select(ScrapedData).where(ScrapedData.source_url == source_url)
         return list(self.session.execute(stmt).scalars().all())
 

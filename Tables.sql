@@ -466,3 +466,490 @@ CREATE TABLE games (
 
     UNIQUE (season, week, winner, loser)
 );
+
+-- ===========================
+-- SCRAPE METADATA
+-- ===========================
+
+CREATE TABLE scraped_data_metadata (
+    id              serial PRIMARY KEY,
+    source_url      text NOT NULL,         -- URL that was scraped
+    table_id        varchar(255) NOT NULL, -- identifier for the scraped table
+    table_name      varchar(255),          -- human-readable table name
+    scraped_at      timestamp NOT NULL DEFAULT NOW(), -- when the scrape occurred
+    season          integer,               -- season year (optional)
+    entity_type     varchar(100),          -- type of entity scraped
+    table_type      varchar(100),          -- classification of table
+    rows_scraped    integer,               -- number of rows scraped
+    source_type     varchar(50)            -- 'visible' or 'comment'
+);
+
+-- ===========================
+-- SCRAPED DATA STAGING TABLES
+-- ===========================
+-- Dynamically created by the scraper (excel_scraper_service.py).
+-- Table names derived from HTML table id attributes on Pro-Football-Reference.
+-- NOT managed by Alembic — auto-generated at scrape time.
+-- Raw text columns in regular season tables; typed columns in _post tables.
+
+-- Standings (conference-level)
+CREATE TABLE scraped_afc (
+    id              serial PRIMARY KEY,
+    tm              text,
+    w               text,
+    l               text,
+    w_l_            text,                  -- win-loss percentage
+    pf              text,
+    pa              text,
+    pd              text,
+    mov             text,
+    sos             text,
+    srs             text,
+    osrs            text,
+    dsrs            text,
+    source_url      text,
+    scraped_at      timestamp,
+    season          integer,
+    entity_type     text,
+    table_type      text
+);
+
+CREATE TABLE scraped_nfc (
+    id              serial PRIMARY KEY,
+    tm              text,
+    w               text,
+    l               text,
+    w_l_            text,
+    pf              text,
+    pa              text,
+    pd              text,
+    mov             text,
+    sos             text,
+    srs             text,
+    osrs            text,
+    dsrs            text,
+    source_url      text,
+    scraped_at      timestamp,
+    season          integer,
+    entity_type     text,
+    table_type      text
+);
+
+-- Playoff standings
+CREATE TABLE scraped_afc_playoff_standings (
+    id              serial PRIMARY KEY,
+    tm              text,
+    w               integer,
+    l               integer,
+    t               integer,
+    position        text,
+    reason          text,
+    source_url      text,
+    scraped_at      timestamp,
+    season          integer,
+    entity_type     text,
+    table_type      text
+);
+
+CREATE TABLE scraped_nfc_playoff_standings (
+    id              serial PRIMARY KEY,
+    tm              text,
+    w               integer,
+    l               integer,
+    t               integer,
+    position        text,
+    reason          text,
+    source_url      text,
+    scraped_at      timestamp,
+    season          integer,
+    entity_type     text,
+    table_type      text
+);
+
+-- Games
+CREATE TABLE scraped_games (
+    id              serial PRIMARY KEY,
+    week            text,
+    day             text,
+    date            text,
+    time            text,
+    winner_tie      text,
+    unnamed__5      text,                  -- home/away indicator
+    loser_tie       text,
+    unnamed__7      text,                  -- home/away indicator
+    ptsw            text,
+    ptsl            text,
+    ydsw            text,
+    tow             text,
+    ydsl            text,
+    tol             text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_playoff_results (
+    id              serial PRIMARY KEY,
+    week            text,
+    day             text,
+    date            text,
+    winner_tie      text,
+    unnamed__4      text,
+    loser_tie       text,
+    date_1          text,
+    ptsw            integer,
+    ptsl            integer,
+    source_url      text,
+    scraped_at      timestamp,
+    season          integer,
+    entity_type     text,
+    table_type      text
+);
+
+CREATE TABLE scraped_preseason_games (
+    id              serial PRIMARY KEY,
+    week            text,
+    day             text,
+    date            text,
+    time            text,
+    vistm           text,
+    pts             text,
+    unnamed__6      text,
+    hometm          text,
+    pts_1           text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+-- Defense (regular season = text, post = typed)
+CREATE TABLE scraped_defense (
+    id              serial PRIMARY KEY,
+    rk              text,
+    player          text,
+    age             text,
+    team            text,
+    pos             text,
+    g               text,
+    gs              text,
+    def_interceptions_int   text,
+    def_interceptions_yds   text,
+    def_interceptions_inttd text,
+    def_interceptions_lng   text,
+    def_interceptions_pd    text,
+    fumbles_ff      text,
+    fumbles_fmb     text,
+    fumbles_fr      text,
+    fumbles_yds     text,
+    fumbles_frtd    text,
+    sk              text,
+    tackles_comb    text,
+    tackles_solo    text,
+    tackles_ast     text,
+    tackles_tfl     text,
+    tackles_qbhits  text,
+    sfty            text,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_defense_post (
+    id              serial PRIMARY KEY,
+    rk              integer,
+    player          text,
+    age             integer,
+    team            text,
+    pos             text,
+    g               integer,
+    gs              integer,
+    def_interceptions_int   integer,
+    def_interceptions_yds   integer,
+    def_interceptions_inttd integer,
+    def_interceptions_lng   integer,
+    def_interceptions_pd    integer,
+    fumbles_ff      integer,
+    fumbles_fmb     integer,
+    fumbles_fr      integer,
+    fumbles_yds     integer,
+    fumbles_frtd    integer,
+    sk              double precision,
+    tackles_comb    integer,
+    tackles_solo    integer,
+    tackles_ast     integer,
+    tackles_tfl     integer,
+    tackles_qbhits  integer,
+    sfty            integer,
+    awards          double precision,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+-- Punting (regular season = float, post = float)
+CREATE TABLE scraped_punting (
+    id              serial PRIMARY KEY,
+    rk              double precision,
+    player          text,
+    age             double precision,
+    team            text,
+    pos             text,
+    g               double precision,
+    gs              double precision,
+    punting_pnt     double precision,
+    punting_yds     double precision,
+    punting_y_p     double precision,
+    punting_retyds  double precision,
+    punting_netyds  double precision,
+    punting_ny_p    double precision,
+    punting_lng     double precision,
+    punting_tb      double precision,
+    punting_tb_     double precision,
+    punting_pnt20   double precision,
+    punting_in20_   double precision,
+    punting_blck    double precision,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_punting_post (
+    id              serial PRIMARY KEY,
+    rk              double precision,
+    player          text,
+    age             double precision,
+    team            text,
+    pos             text,
+    g               double precision,
+    gs              double precision,
+    punting_pnt     double precision,
+    punting_yds     double precision,
+    punting_y_p     double precision,
+    punting_retyds  double precision,
+    punting_netyds  double precision,
+    punting_ny_p    double precision,
+    punting_lng     double precision,
+    punting_tb      double precision,
+    punting_tb_     double precision,
+    punting_pnt20   double precision,
+    punting_in20_   double precision,
+    punting_blck    double precision,
+    awards          double precision,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+-- Receiving (regular season = text, post = float)
+CREATE TABLE scraped_receiving (
+    id              serial PRIMARY KEY,
+    rk              text,
+    player          text,
+    age             text,
+    team            text,
+    pos             text,
+    g               text,
+    gs              text,
+    receiving_tgt   text,
+    receiving_rec   text,
+    receiving_yds   text,
+    receiving_y_r   text,
+    receiving_td    text,
+    receiving_1d    text,
+    receiving_succ_ text,
+    receiving_lng   text,
+    receiving_r_g   text,
+    receiving_y_g   text,
+    receiving_ctch_ text,
+    receiving_y_tgt text,
+    fmb             text,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_receiving_post (
+    id              serial PRIMARY KEY,
+    rk              double precision,
+    player          text,
+    age             double precision,
+    team            text,
+    pos             text,
+    g               double precision,
+    gs              double precision,
+    receiving_tgt   double precision,
+    receiving_rec   double precision,
+    receiving_yds   double precision,
+    receiving_y_r   double precision,
+    receiving_td    double precision,
+    receiving_1d    double precision,
+    receiving_succ_ double precision,
+    receiving_lng   double precision,
+    receiving_r_g   double precision,
+    receiving_y_g   double precision,
+    receiving_ctch_ double precision,
+    receiving_y_tgt double precision,
+    fmb             double precision,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+-- Returns (regular season = text, post = float)
+CREATE TABLE scraped_returns (
+    id              serial PRIMARY KEY,
+    rk              text,
+    player          text,
+    age             text,
+    team            text,
+    pos             text,
+    g               text,
+    gs              text,
+    punt_returns_ret    text,
+    punt_returns_yds    text,
+    punt_returns_prtd   text,
+    punt_returns_lng    text,
+    punt_returns_y_ret  text,
+    kick_returns_ret    text,
+    kick_returns_yds    text,
+    kick_returns_krtd   text,
+    kick_returns_lng    text,
+    kick_returns_y_ret  text,
+    apyd            text,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_returns_post (
+    id              serial PRIMARY KEY,
+    rk              double precision,
+    player          text,
+    age             double precision,
+    team            text,
+    pos             text,
+    g               double precision,
+    gs              double precision,
+    punt_returns_ret    double precision,
+    punt_returns_yds    double precision,
+    punt_returns_prtd   double precision,
+    punt_returns_lng    double precision,
+    punt_returns_y_ret  double precision,
+    kick_returns_ret    double precision,
+    kick_returns_yds    double precision,
+    kick_returns_krtd   double precision,
+    kick_returns_lng    double precision,
+    kick_returns_y_ret  double precision,
+    apyd            double precision,
+    awards          double precision,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+-- Rushing (regular season = text, post = float)
+CREATE TABLE scraped_rushing (
+    id              serial PRIMARY KEY,
+    rk              text,
+    player          text,
+    age             text,
+    team            text,
+    pos             text,
+    g               text,
+    gs              text,
+    rushing_att     text,
+    rushing_yds     text,
+    rushing_td      text,
+    rushing_1d      text,
+    rushing_succ_   text,
+    rushing_lng     text,
+    rushing_y_a     text,
+    rushing_y_g     text,
+    rushing_a_g     text,
+    fmb             text,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_rushing_post (
+    id              serial PRIMARY KEY,
+    rk              double precision,
+    player          text,
+    age             double precision,
+    team            text,
+    pos             text,
+    g               double precision,
+    gs              double precision,
+    rushing_att     double precision,
+    rushing_yds     double precision,
+    rushing_td      double precision,
+    rushing_1d      double precision,
+    rushing_succ_   double precision,
+    rushing_lng     double precision,
+    rushing_y_a     double precision,
+    rushing_y_g     double precision,
+    rushing_a_g     double precision,
+    fmb             double precision,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+-- Scoring (regular season = text, post = typed)
+CREATE TABLE scraped_scoring (
+    id              serial PRIMARY KEY,
+    rk              text,
+    player          text,
+    age             text,
+    team            text,
+    pos             text,
+    g               text,
+    gs              text,
+    touchdowns_rshtd    text,
+    touchdowns_rectd    text,
+    touchdowns_prtd     text,
+    touchdowns_krtd     text,
+    touchdowns_frtd     text,
+    touchdowns_inttd    text,
+    touchdowns_othtd    text,
+    touchdowns_alltd    text,
+    touchdowns_2pm      text,
+    d2p             text,
+    pat_xpm         text,
+    pat_xpa         text,
+    fg_fgm          text,
+    fg_fga          text,
+    sfty            text,
+    pts             text,
+    pts_g           text,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);
+
+CREATE TABLE scraped_scoring_post (
+    id              serial PRIMARY KEY,
+    rk              integer,
+    player          text,
+    age             integer,
+    team            text,
+    pos             text,
+    g               integer,
+    gs              integer,
+    touchdowns_rshtd    integer,
+    touchdowns_rectd    integer,
+    touchdowns_prtd     integer,
+    touchdowns_krtd     integer,
+    touchdowns_frtd     integer,
+    touchdowns_inttd    integer,
+    touchdowns_othtd    integer,
+    touchdowns_alltd    integer,
+    touchdowns_2pm      integer,
+    d2p             integer,
+    pat_xpm         integer,
+    pat_xpa         integer,
+    fg_fgm          integer,
+    fg_fga          integer,
+    sfty            integer,
+    pts             integer,
+    pts_g           double precision,
+    awards          text,
+    source_url      text,
+    scraped_at      timestamp
+);

@@ -1,19 +1,18 @@
-import requests
 import pandas as pd
 import numpy as np
-from bs4 import BeautifulSoup, Comment
 
 from sqlalchemy.orm import Session
 from src.core.database import SessionLocal
 from src.entities.team_offense import TeamOffense
 from src.repositories.team_offense_repo import TeamOffenseRepository
+from src.dtos.team_offense_dto import TeamOffenseCreate
 
 
 def clean_value(v):
     try:
         if pd.isna(v):
             return None
-    except:
+    except (TypeError, ValueError):
         pass
 
     if isinstance(v, np.generic):
@@ -24,10 +23,10 @@ def clean_value(v):
 
 def get_team_offense_dataframe(season: int):
     import requests
-    from bs4 import BeautifulSoup, Comment
+    from bs4 import BeautifulSoup, Comment, Tag
 
     url = f"https://www.pro-football-reference.com/years/{season}/"
-    res = requests.get(url)
+    res = requests.get(url, timeout=30)
     res.raise_for_status()
 
     soup = BeautifulSoup(res.text, "lxml")
@@ -43,6 +42,8 @@ def get_team_offense_dataframe(season: int):
 
     if table is None:
         raise Exception("Could not find team_stats table")
+
+    assert isinstance(table, Tag)
 
     rows = []
 
@@ -62,7 +63,9 @@ def get_team_offense_dataframe(season: int):
         row = [c.text.strip() for c in cells]
         rows.append(row)
 
-    headers = [th.get_text(strip=True) for th in table.find_all("th")][1:len(rows[0])+1]
+    headers = [th.get_text(strip=True) for th in table.find_all("th")][
+        1 : len(rows[0]) + 1
+    ]
 
     df = pd.DataFrame(rows, columns=headers)
 
@@ -122,7 +125,10 @@ async def scrape_and_store_team_offense(season: int):
 
         saved = []
         for row in parsed:
-            obj = TeamOffense(**row)
+            # Validate input with DTO
+            dto = TeamOffenseCreate(**row)
+            # Convert DTO to entity
+            obj = TeamOffense(**dto.model_dump())
             saved_obj = repo.create(obj, commit=False)
             saved.append(saved_obj)
 
