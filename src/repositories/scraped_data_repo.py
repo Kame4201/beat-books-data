@@ -40,8 +40,8 @@ class ScrapedDataRepository(BaseRepository[ScrapedData]):
 assert bind is not None
 inspector = inspect(bind)
 if not isinstance(inspector, Inspector):
-raise RuntimeError("Expected Inspector")
-        if not inspector.has_table('scraped_data_metadata'):
+ raise RuntimeError("Expected Inspector")
+if not inspector.has_table('scraped_data_metadata'):
             ScrapedData.metadata.create_all(bind)
 
     def track_scraped_data(self, metadata: ScrapedDataMetadataCreate) -> ScrapedData:
@@ -90,12 +90,12 @@ raise RuntimeError("Expected Inspector")
             True if table exists, False otherwise
         """
         bind = self.session.bind
-assert bind is not None
-inspector = inspect(bind)
-assert isinstance(inspector,Inspector)
+        assert bind is not None
+        inspector = inspect(bind)
+        assert isinstance(inspector, Inspector)
         return inspector.has_table(table_name)
 
-    def create_dynamic_table(self, table_name: str, df: pd.DataFrame) -> None:
+def create_dynamic_table(self, table_name: str, df: pd.DataFrame) -> None:
         """
         Dynamically create a database table based on DataFrame structure.
 
@@ -163,7 +163,7 @@ assert isinstance(inspector,Inspector)
 assert bind is not None
 inspector = inspect(bind)
 assert isinstance(inspector, Inspector)
-        if not inspector.has_table(clean_table_name):
+if not inspector.has_table(clean_table_name):
             return 0
 
         columns = [col['name'] for col in inspector.get_columns(clean_table_name)]
