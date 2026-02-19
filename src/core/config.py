@@ -39,6 +39,9 @@ class Settings(BaseSettings):
         []
     )  # Format: ["http://proxy1:port", "http://proxy2:port"]
 
+    # Weather API (OpenWeatherMap)
+    OPENWEATHER_API_KEY: str = ""
+
     # Odds API (Phase 2)
     ODDS_API_KEY: str = ""
     ODDS_API_BASE_URL: str = "https://api.the-odds-api.com"

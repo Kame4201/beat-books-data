@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
+from src.core.config import settings
 from src.core.database import SessionLocal
 from src.repositories.injury_report_repo import InjuryReportRepository
 from src.dtos.injury_report_dto import InjuryReportCreate
@@ -71,8 +72,8 @@ class InjuryReportService:
             url = f"https://www.pro-football-reference.com/years/{season}/week_{week}_injuries.htm"
             driver.get(url)
 
-            # Wait for page to load
-            time.sleep(2)
+            # Rate-limit scraping using centralized config
+            time.sleep(settings.SCRAPE_DELAY_SECONDS)
 
             # Get page source and parse with BeautifulSoup
             soup = BeautifulSoup(driver.page_source, 'html.parser')

@@ -1,11 +1,11 @@
 """
 Service for fetching and managing game weather data.
 """
-import os
 from typing import List, Optional, Dict
 from datetime import datetime
 import requests
 
+from src.core.config import settings
 from src.core.database import SessionLocal
 from src.repositories.game_weather_repo import GameWeatherRepository
 from src.dtos.game_weather_dto import GameWeatherCreate
@@ -62,11 +62,11 @@ class GameWeatherService:
 
         Args:
             db_session: Optional database session (will create new if not provided)
-            api_key: OpenWeatherMap API key (will read from env if not provided)
+            api_key: OpenWeatherMap API key (falls back to settings.OPENWEATHER_API_KEY)
         """
         self.db = db_session or SessionLocal()
         self.repo = GameWeatherRepository(self.db)
-        self.api_key = api_key or os.getenv('OPENWEATHER_API_KEY')
+        self.api_key = api_key or settings.OPENWEATHER_API_KEY
 
         if not self.api_key:
             print("Warning: OPENWEATHER_API_KEY not set. Weather fetching will not work.")
