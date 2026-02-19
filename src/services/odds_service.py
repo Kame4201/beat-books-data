@@ -1,4 +1,5 @@
 """Service layer for odds business logic. NO SQL here."""
+
 import httpx
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
@@ -21,9 +22,7 @@ class OddsService:
         self.base_url = settings.ODDS_API_BASE_URL
 
     async def fetch_odds_from_api(
-        self,
-        sport: str = "americanfootball_nfl",
-        markets: str = "h2h,spreads,totals"
+        self, sport: str = "americanfootball_nfl", markets: str = "h2h,spreads,totals"
     ) -> List[Dict[str, Any]]:
         """
         Fetch current odds from The Odds API.
@@ -46,7 +45,7 @@ class OddsService:
             "apiKey": self.api_key,
             "regions": "us",
             "markets": markets,
-            "oddsFormat": "american"
+            "oddsFormat": "american",
         }
 
         async with httpx.AsyncClient() as client:
@@ -60,7 +59,7 @@ class OddsService:
         season: int,
         week: int,
         is_opening: bool = False,
-        is_closing: bool = False
+        is_closing: bool = False,
     ) -> List[OddsCreate]:
         """
         Parse The Odds API response into OddsCreate DTOs.
@@ -139,7 +138,7 @@ class OddsService:
                     over_under=over_under,
                     timestamp=timestamp,
                     is_opening=is_opening,
-                    is_closing=is_closing
+                    is_closing=is_closing,
                 )
                 odds_dtos.append(odds_dto)
 
@@ -165,11 +164,7 @@ class OddsService:
         return team_map.get(full_name, full_name[:3].upper())
 
     async def fetch_and_store_current_odds(
-        self,
-        season: int,
-        week: int,
-        is_opening: bool = False,
-        is_closing: bool = False
+        self, season: int, week: int, is_opening: bool = False, is_closing: bool = False
     ) -> List[int]:
         """
         Fetch current odds from API and store in database.
@@ -192,19 +187,15 @@ class OddsService:
         )
 
         # Store in database (skip duplicates)
-        stored_ids = []
+        stored_ids: List[int] = []
         for dto in odds_dtos:
             odds_record = OddsRepository.create_or_skip(self.db, dto)
-            stored_ids.append(odds_record.id)
+            stored_ids.append(int(odds_record.id))
 
         return stored_ids
 
     def get_closing_line_value(
-        self,
-        season: int,
-        week: int,
-        team: str,
-        sportsbook: str = "consensus"
+        self, season: int, week: int, team: str, sportsbook: str = "consensus"
     ) -> Optional[Dict[str, Any]]:
         """
         Calculate closing line value for a team.
@@ -229,8 +220,7 @@ class OddsService:
         # Filter by sportsbook if specified
         if sportsbook != "consensus":
             closing_lines = [
-                line for line in closing_lines
-                if line.sportsbook == sportsbook
+                line for line in closing_lines if line.sportsbook == sportsbook
             ]
 
         if not closing_lines:
@@ -246,5 +236,5 @@ class OddsService:
             "moneyline_away": latest.moneyline_away,
             "over_under": float(latest.over_under) if latest.over_under else None,
             "sportsbook": latest.sportsbook,
-            "timestamp": latest.timestamp
+            "timestamp": latest.timestamp,
         }
