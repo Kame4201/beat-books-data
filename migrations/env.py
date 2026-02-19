@@ -16,18 +16,21 @@ from src.core.config import settings
 
 # Import all entity models so they're registered with Base.metadata
 from src.entities.team_offense import TeamOffense
+from src.entities.team_defense import TeamDefense
 from src.entities.defense_stats import DefenseStats
 from src.entities.passing_stats import PassingStats
 from src.entities.rushing_stats import RushingStats
-from src.entities.punting_stats import PuntingStats
-from src.entities.returns import Returns
-from src.entities.return_stats import ReturnStats
-from src.entities.kicking_stats import KickingStats
-from src.entities.punting import Punting
-from src.entities.scraped_data import ScrapedData
-from src.entities.kicking import Kicking
-from src.entities.scoring_stats import ScoringStats
 from src.entities.receiving_stats import ReceivingStats
+from src.entities.punting_stats import PuntingStats
+from src.entities.kicking_stats import KickingStats
+from src.entities.return_stats import ReturnStats
+from src.entities.scoring_stats import ScoringStats
+from src.entities.kicking import Kicking
+from src.entities.punting import Punting
+from src.entities.returns import TeamReturns
+from src.entities.games import Games
+from src.entities.standings import Standings
+from src.entities.team_game import TeamGame
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

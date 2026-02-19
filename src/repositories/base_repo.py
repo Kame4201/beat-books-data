@@ -37,3 +37,26 @@ class BaseRepository(Generic[T]):
         self.session.delete(obj)
         if commit:
             self.session.commit()
+
+    def upsert(self, obj: T, unique_fields: dict, *, commit: bool = True) -> T:
+        """Insert *obj* or update the existing row matched by *unique_fields*."""
+        stmt = select(self.model)
+        for field, value in unique_fields.items():
+            stmt = stmt.where(getattr(self.model, field) == value)
+        existing = self.session.execute(stmt).scalars().first()
+
+        if existing:
+            for key, value in vars(obj).items():
+                if key.startswith("_") or key == "id":
+                    continue
+                setattr(existing, key, value)
+            if commit:
+                self.session.commit()
+                self.session.refresh(existing)
+            return existing
+
+        self.session.add(obj)
+        if commit:
+            self.session.commit()
+            self.session.refresh(obj)
+        return obj

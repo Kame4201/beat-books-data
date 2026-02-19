@@ -1,140 +1,77 @@
-import pandas as pd
-import numpy as np
+import logging
 
 from sqlalchemy.orm import Session
+
 from src.core.database import SessionLocal
+from src.core.pfr_scraper import fetch_and_parse_table, clean_value, to_int, to_decimal
 from src.entities.team_offense import TeamOffense
 from src.repositories.team_offense_repo import TeamOffenseRepository
 from src.dtos.team_offense_dto import TeamOffenseCreate
 
+logger = logging.getLogger(__name__)
 
-def clean_value(v):
-    try:
-        if pd.isna(v):
-            return None
-    except (TypeError, ValueError):
-        pass
+COLUMN_MAP = {
+    "ranker": ("rk", to_int),
+    "team": ("tm", clean_value),
+    "g": ("g", to_int),
+    "points": ("pf", to_int),
+    "total_yds": ("yds", to_int),
+    "plays": ("ply", to_int),
+    "yds_per_play": ("ypp", to_decimal),
+    "turnovers": ("turnovers", to_int),
+    "fumbles_lost": ("fl", to_int),
+    "first_down": ("firstd_total", to_int),
+    "pass_cmp": ("cmp", to_int),
+    "pass_att": ("att_pass", to_int),
+    "pass_yds": ("yds_pass", to_int),
+    "pass_td": ("td_pass", to_int),
+    "pass_int": ("ints", to_int),
+    "pass_net_yds_per_att": ("nypa", to_decimal),
+    "pass_fd": ("firstd_pass", to_int),
+    "rush_att": ("att_rush", to_int),
+    "rush_yds": ("yds_rush", to_int),
+    "rush_td": ("td_rush", to_int),
+    "rush_yds_per_att": ("ypa", to_decimal),
+    "rush_fd": ("firstd_rush", to_int),
+    "penalties": ("pen", to_int),
+    "penalties_yds": ("yds_pen", to_int),
+    "pen_fd": ("firstpy", to_int),
+    "score_pct": ("sc_pct", to_decimal),
+    "turnover_pct": ("to_pct", to_decimal),
+    "exp_pts_tot": ("opea", to_decimal),
+}
 
-    if isinstance(v, np.generic):
-        return v.item()
 
-    return v
-
-
-def get_team_offense_dataframe(season: int):
-    import requests
-    from bs4 import BeautifulSoup, Comment, Tag
-
-    url = f"https://www.pro-football-reference.com/years/{season}/"
-    res = requests.get(url, timeout=30)
-    res.raise_for_status()
-
-    soup = BeautifulSoup(res.text, "lxml")
-
-    table = soup.find("table", id="team_stats")
-
-    if table is None:
-        comments = soup.find_all(string=lambda x: isinstance(x, Comment))
-        for c in comments:
-            if "team_stats" in c:
-                table = BeautifulSoup(c, "lxml").find("table", id="team_stats")
-                break
-
-    if table is None:
-        raise Exception("Could not find team_stats table")
-
-    assert isinstance(table, Tag)
-
-    rows = []
-
-    for tr in table.find_all("tr"):
-        # skip header rows
-        if "class" in tr.attrs and "thead" in tr["class"]:
+def parse_rows(rows: list[dict], season: int) -> list[dict]:
+    parsed = []
+    for row in rows:
+        tm = clean_value(row.get("team"))
+        if not tm:
             continue
-
-        cells = tr.find_all("td")
-        if not cells:
-            continue
-
-        tm = tr.find("td", {"data-stat": "team"})
-        if not tm or not tm.text.strip():
-            continue  # skip blank rows
-
-        row = [c.text.strip() for c in cells]
-        rows.append(row)
-
-    headers = [th.get_text(strip=True) for th in table.find_all("th")][
-        1 : len(rows[0]) + 1
-    ]
-
-    df = pd.DataFrame(rows, columns=headers)
-
-    return df
+        rec: dict = {"season": season}
+        for pfr_key, (field, converter) in COLUMN_MAP.items():
+            rec[field] = converter(row.get(pfr_key))
+        parsed.append(rec)
+    return parsed
 
 
-def parse_team_offense(df: pd.DataFrame, season: int):
-    offenses = []
-
-    for _, row in df.iterrows():
-        rec = {
-            "season": season,
-            "rk": clean_value(row.get("Rk")),
-            "tm": clean_value(row.get("Tm")),
-            "g": clean_value(row.get("G")),
-            "pf": clean_value(row.get("PF")),
-            "yds": clean_value(row.get("Yds")),
-            "ply": clean_value(row.get("Ply")),
-            "ypp": clean_value(row.get("Y/P")),
-            "turnovers": clean_value(row.get("TO")),
-            "fl": clean_value(row.get("FL")),
-            "firstd_total": clean_value(row.get("1stD")),
-            "cmp": clean_value(row.get("Cmp")),
-            "att_pass": clean_value(row.get("Att")),
-            "yds_pass": clean_value(row.get("Yds.1")),
-            "td_pass": clean_value(row.get("TD")),
-            "ints": clean_value(row.get("Int")),
-            "nypa": clean_value(row.get("NY/A")),
-            "firstd_pass": clean_value(row.get("1stD.1")),
-            "att_rush": clean_value(row.get("Att.1")),
-            "yds_rush": clean_value(row.get("Yds.2")),
-            "td_rush": clean_value(row.get("TD.1")),
-            "ypa": clean_value(row.get("Y/A")),
-            "firstd_rush": clean_value(row.get("1stD.2")),
-            "pen": clean_value(row.get("Pen")),
-            "yds_pen": clean_value(row.get("Yds.3")),
-            "firstpy": clean_value(row.get("1stPy")),
-            "sc_pct": clean_value(row.get("Sc%")),
-            "to_pct": clean_value(row.get("TO%")),
-            "opea": clean_value(row.get("O/Pl")),
-        }
-
-        offenses.append(rec)
-
-    return offenses
-
-
-async def scrape_and_store_team_offense(season: int):
-
+async def scrape_and_store(season: int):
     db: Session = SessionLocal()
-
     try:
-        df = get_team_offense_dataframe(season)
-        parsed = parse_team_offense(df, season)
+        rows = fetch_and_parse_table(season, "team_stats")
+        parsed = parse_rows(rows, season)
 
         repo = TeamOffenseRepository(db)
-
         saved = []
         for row in parsed:
-            # Validate input with DTO
             dto = TeamOffenseCreate(**row)
-            # Convert DTO to entity
             obj = TeamOffense(**dto.model_dump())
-            saved_obj = repo.create(obj, commit=False)
+            saved_obj = repo.upsert(
+                obj, unique_fields={"tm": dto.tm, "season": dto.season}, commit=False
+            )
             saved.append(saved_obj)
 
         db.commit()
-
-        return saved
-
+        return {"status": "success", "rows_saved": len(saved), "season": season}
     finally:
         db.close()
