@@ -38,9 +38,16 @@ alembic current
 alembic history
 ```
 
-## Migration 001: Performance Indexes
+## Migration Chain
 
-The first migration (`001_add_performance_indexes.py`) adds recommended database indexes for common query patterns:
+Migrations must be applied in order. The chain is:
+
+1. `001_initial_schema_from_tables_sql.py` -- Creates all NFL stats tables (team_offense, team_defense, returns, kicking, punting, passing_stats, rushing_stats, receiving_stats, defense_stats, kicking_stats, punting_stats, return_stats, scoring_stats, standings, games).
+2. `001_add_performance_indexes.py` -- Adds performance indexes on frequently queried columns.
+
+## Migration 002: Performance Indexes
+
+The second migration (`001_add_performance_indexes.py`) adds recommended database indexes for common query patterns:
 
 ### Indexes Added
 
