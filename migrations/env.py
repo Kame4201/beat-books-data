@@ -28,6 +28,7 @@ from src.entities.scraped_data import ScrapedData
 from src.entities.kicking import Kicking
 from src.entities.scoring_stats import ScoringStats
 from src.entities.receiving_stats import ReceivingStats
+from src.entities.odds import Odds
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
