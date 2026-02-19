@@ -2,6 +2,15 @@
 Repository for handling scrape job operations.
 
 This repository manages CRUD operations for ScrapeJob entities.
+All SQL lives here -- services must call these methods rather than
+executing queries directly.
+
+Concurrency note: increment_processed() and increment_failed() use
+ORM-level read-then-write, which is safe for the current sequential
+BatchScrapeService execution model. If concurrent workers are added
+in the future, these should be converted to atomic SQL UPDATE
+statements (e.g., UPDATE ... SET processed = processed + 1) to
+avoid lost-update race conditions.
 """
 from __future__ import annotations
 

@@ -2,7 +2,18 @@
 Service for batch scraping operations with job tracking.
 
 This service orchestrates batch scraping of multiple team/year combinations,
-tracks progress, handles failures gracefully, and respects rate limiting.
+tracks progress via ScrapeJobRepository, handles failures gracefully, and
+respects rate limiting via settings.SCRAPE_DELAY_SECONDS (configurable in
+src/core/config.py, default 60s).
+
+Architecture:
+    BatchScrapeService -> ScrapeJobRepository -> PostgreSQL (scrape_jobs table)
+    BatchScrapeService -> scrape_and_store()  -> individual scrape logic
+
+Job lifecycle:  pending -> running -> complete
+    Partial failures are recorded but do not abort the batch.
+    Each target is processed sequentially with a configurable delay between
+    requests to respect Pro-Football-Reference rate limits.
 """
 from __future__ import annotations
 
@@ -126,8 +137,10 @@ class BatchScrapeService:
                 results['failed'] += 1
                 results['errors'].append(error_info)
 
-            # Rate limiting - wait between requests
-            # Don't wait after the last item
+            # Rate limiting: configurable delay between requests to avoid
+            # 403 bans from Pro-Football-Reference. Uses settings.SCRAPE_DELAY_SECONDS
+            # (default 60s, overridable via SCRAPE_DELAY_SECONDS env var).
+            # Skip the delay after the last target to avoid unnecessary wait.
             if idx < len(targets) - 1:
                 await asyncio.sleep(settings.SCRAPE_DELAY_SECONDS)
 
