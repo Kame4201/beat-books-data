@@ -5,9 +5,27 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Import your Base and settings
+# Add the project root to sys.path so we can import src modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import Base and all entities for autogeneration
 from src.entities.base import Base
 from src.core.config import settings
+
+# Import all entity models so they're registered with Base.metadata
+from src.entities.team_offense import TeamOffense
+from src.entities.defense_stats import DefenseStats
+from src.entities.passing_stats import PassingStats
+from src.entities.rushing_stats import RushingStats
+from src.entities.punting_stats import PuntingStats
+from src.entities.returns import Returns
+from src.entities.return_stats import ReturnStats
+from src.entities.kicking_stats import KickingStats
+from src.entities.punting import Punting
+from src.entities.scraped_data import ScrapedData
+from src.entities.kicking import Kicking
+from src.entities.scoring_stats import ScoringStats
+from src.entities.receiving_stats import ReceivingStats
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
