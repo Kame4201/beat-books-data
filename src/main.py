@@ -1,7 +1,64 @@
-from fastapi import FastAPI
-from src.services import scrape_service, team_offense_service, excel_scraper_service
+from enum import Enum
+
+from fastapi import FastAPI, HTTPException
+
+from src.services import (
+    scrape_service,
+    team_offense_service,
+    team_defense_service,
+    standings_service,
+    games_service,
+    kicking_team_service,
+    punting_team_service,
+    returns_team_service,
+    passing_stats_service,
+    rushing_stats_service,
+    receiving_stats_service,
+    defense_stats_service,
+    kicking_stats_service,
+    punting_stats_service,
+    return_stats_service,
+    scoring_stats_service,
+)
 
 app = FastAPI()
+
+
+class StatType(str, Enum):
+    team_offense = "team_offense"
+    team_defense = "team_defense"
+    standings = "standings"
+    games = "games"
+    kicking = "kicking"
+    punting = "punting"
+    returns = "returns"
+    passing_stats = "passing_stats"
+    rushing_stats = "rushing_stats"
+    receiving_stats = "receiving_stats"
+    defense_stats = "defense_stats"
+    kicking_stats = "kicking_stats"
+    punting_stats = "punting_stats"
+    return_stats = "return_stats"
+    scoring_stats = "scoring_stats"
+
+
+SCRAPE_DISPATCH = {
+    StatType.team_offense: team_offense_service.scrape_and_store_team_offense,
+    StatType.team_defense: team_defense_service.scrape_and_store,
+    StatType.standings: standings_service.scrape_and_store,
+    StatType.games: games_service.scrape_and_store,
+    StatType.kicking: kicking_team_service.scrape_and_store,
+    StatType.punting: punting_team_service.scrape_and_store,
+    StatType.returns: returns_team_service.scrape_and_store,
+    StatType.passing_stats: passing_stats_service.scrape_and_store,
+    StatType.rushing_stats: rushing_stats_service.scrape_and_store,
+    StatType.receiving_stats: receiving_stats_service.scrape_and_store,
+    StatType.defense_stats: defense_stats_service.scrape_and_store,
+    StatType.kicking_stats: kicking_stats_service.scrape_and_store,
+    StatType.punting_stats: punting_stats_service.scrape_and_store,
+    StatType.return_stats: return_stats_service.scrape_and_store,
+    StatType.scoring_stats: scoring_stats_service.scrape_and_store,
+}
 
 
 @app.get("/")
@@ -9,56 +66,36 @@ async def read_root():
     return {"Hello": "World"}
 
 
-
-@app.get("/scrape/{team}/{year}")
-async def scrape_data(team: str, year: int):
+@app.get("/scrape/team-gamelog/{team}/{year}")
+async def scrape_team_gamelog(team: str, year: int):
     """
-    Docstring for scrape_data function. scrapes data from team of choice.
+    Scrape team gamelog data for a specific team and year.
+
     Args:
-        team (str): The team to scrape data for.
-        year (int): The year to scrape data for.
+        team: The team abbreviation to scrape data for.
+        year: The season year to scrape data for.
+
     Returns:
         dict: A dictionary containing the scraping result.
     """
-
     data = await scrape_service.scrape_and_store(team, year)
     return data
 
 
-
-@app.get("/scrape/{year}")
-async def scrape_team_offense(year: int):
-
-
-    data = await team_offense_service.scrape_and_store_team_offense(year)
-    return data
-
-
-@app.post("/scrape/excel")
-async def scrape_from_excel_file(excel_path: str):
+@app.get("/scrape/{stat_type}/{season}")
+async def scrape_stat(stat_type: StatType, season: int):
     """
-    Scrape Pro-Football-Reference URLs from an Excel file and store results in database.
-
-    The Excel file should contain:
-    - url (required): The Pro-Football-Reference URL to scrape
-    - season (optional): Season year
-    - entity_type (optional): Type of entity being scraped
-    - table_type (optional): Type of table being scraped
+    Scrape and store NFL stats from Pro-Football-Reference.
 
     Args:
-        excel_path (str): Path to the Excel file containing URLs to scrape
+        stat_type: Type of stat to scrape (see StatType enum for valid values).
+        season: The NFL season year.
 
     Returns:
-        dict: Summary of scraping results including:
-            - urls_processed: Number of URLs attempted
-            - urls_success: Number of URLs successfully scraped
-            - urls_failed: Number of URLs that failed
-            - tables_extracted: Total number of tables extracted
-            - rows_inserted: Total number of rows inserted
-            - errors: List of error messages (if any)
-
-    Example:
-        POST /scrape/excel?excel_path=/path/to/urls.xlsx
+        List of saved records.
     """
-    results = await excel_scraper_service.scrape_from_excel(excel_path)
-    return results
+    scrape_fn = SCRAPE_DISPATCH.get(stat_type)
+    if scrape_fn is None:
+        raise HTTPException(status_code=400, detail=f"Unknown stat type: {stat_type}")
+    data = await scrape_fn(season)
+    return data

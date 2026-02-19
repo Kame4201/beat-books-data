@@ -1,8 +1,8 @@
 # Entities/team_game.py
 from sqlalchemy import Column, Integer, String, Date
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+from .base import Base
+
 
 class TeamGame(Base):
     __tablename__ = "team_games"

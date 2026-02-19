@@ -1,1 +1,1 @@
-from .team_offense import TeamOffense
+from .team_offense import TeamOffense as TeamOffense
