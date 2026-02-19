@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (require network/DB)",
+    "unit: marks tests as unit tests",
+]

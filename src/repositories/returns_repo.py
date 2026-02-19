@@ -2,10 +2,10 @@
 
 from sqlalchemy.orm import Session
 
-from src.entities.returns import Returns
+from src.entities.returns import TeamReturns
 from src.repositories.base_repo import BaseRepository
 
 
-class ReturnsRepository(BaseRepository[Returns]):
+class ReturnsRepository(BaseRepository[TeamReturns]):
     def __init__(self, session: Session) -> None:
-        super().__init__(session=session, model=Returns)
+        super().__init__(session=session, model=TeamReturns)

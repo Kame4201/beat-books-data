@@ -12,10 +12,7 @@ pydantic[email]
 # Database (you said you're using Postgres now, MySQL later)
 sqlalchemy
 psycopg2-binary
-
-# If you plan JWT auth soon
-python-jose
-passlib[bcrypt]
+alembic
 
 # If scraping code uses aiohttp or requests, include these:
 requests
@@ -25,5 +22,11 @@ aiohttp
 
 pandas
 selenium
+selenium-stealth
 webdriver-manager
 openpyxl
+pydantic-settings
+
+# Type stubs for mypy
+types-requests
+types-beautifulsoup4
