@@ -10,43 +10,39 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
-from src.entities.team_offense import TeamOffense
-from src.repositories.team_offense_repo import TeamOffenseRepository
-from src.dtos.team_offense_dto import TeamOffenseCreate
+from src.entities.defense_stats import DefenseStats
+from src.repositories.defense_stats_repo import DefenseStatsRepository
+from src.dtos.defense_stats_dto import DefenseStatsCreate
 
 logger = logging.getLogger(__name__)
 
-PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/"
-PFR_TABLE_ID = "team_stats"
+PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/defense.htm"
+PFR_TABLE_ID = "defense"
 
 COLUMN_MAP = {
+    "player": "player_name",
+    "age": "age",
     "team": "tm",
+    "pos": "pos",
     "g": "g",
-    "points": "pf",
-    "total_yards": "yds",
-    "plays_offense": "ply",
-    "yds_per_play_offense": "ypp",
-    "turnovers": "turnovers",
-    "fumbles_lost": "fl",
-    "first_down": "firstd_total",
-    "pass_cmp": "cmp",
-    "pass_att": "att_pass",
-    "pass_yds": "yds_pass",
-    "pass_td": "td_pass",
-    "pass_int": "ints",
-    "pass_net_yds_per_att": "nypa",
-    "pass_fd": "firstd_pass",
-    "rush_att": "att_rush",
-    "rush_yds": "yds_rush",
-    "rush_td": "td_rush",
-    "rush_yds_per_att": "ypa",
-    "rush_fd": "firstd_rush",
-    "penalties": "pen",
-    "penalties_yds": "yds_pen",
-    "pen_fd": "firstpy",
-    "score_pct": "sc_pct",
-    "turnover_pct": "to_pct",
-    "exp_pts_tot": "opea",
+    "gs": "gs",
+    "def_int": "ints",
+    "def_int_yds": "int_yds",
+    "def_int_td": "int_td",
+    "def_int_long": "int_lng",
+    "pass_defended": "pd",
+    "fumbles_forced": "ff",
+    "fumbles": "fmb",
+    "fumbles_rec": "fr",
+    "fumbles_rec_yds": "fr_yds",
+    "fumbles_rec_td": "fr_td",
+    "sacks": "sk",
+    "tackles_combined": "comb",
+    "tackles_solo": "solo",
+    "tackles_assists": "ast",
+    "tackles_loss": "tfl",
+    "qb_hits": "qb_hits",
+    "safety_md": "sfty",
 }
 
 
@@ -69,8 +65,8 @@ def get_dataframe(season: int) -> list[dict]:
         if not cells:
             continue
 
-        tm_cell = tr.find("td", {"data-stat": "team"})
-        if not tm_cell or not tm_cell.text.strip():
+        player_cell = tr.find("td", {"data-stat": "player"})
+        if not player_cell or not player_cell.text.strip():
             continue
 
         row = {}
@@ -79,23 +75,30 @@ def get_dataframe(season: int) -> list[dict]:
             if data_stat and data_stat in COLUMN_MAP:
                 row[COLUMN_MAP[data_stat]] = clean_value(cell.text.strip())
 
+        if "player_name" in row and row["player_name"]:
+            row["player_name"] = row["player_name"].rstrip("*+")
+
+        rk_cell = tr.find("th", {"data-stat": "ranker"})
+        if rk_cell and rk_cell.text.strip():
+            row["rk"] = clean_value(rk_cell.text.strip())
+
         row["season"] = season
         rows.append(row)
 
     return rows
 
 
-async def scrape_and_store_team_offense(season: int):
+async def scrape_and_store(season: int):
     db: Session = SessionLocal()
 
     try:
         parsed = get_dataframe(season)
-        repo = TeamOffenseRepository(db)
+        repo = DefenseStatsRepository(db)
 
         saved = []
         for row in parsed:
-            dto = TeamOffenseCreate(**row)
-            obj = TeamOffense(**dto.model_dump())
+            dto = DefenseStatsCreate(**row)
+            obj = DefenseStats(**dto.model_dump())
             saved_obj = repo.create(obj, commit=False)
             saved.append(saved_obj)
 

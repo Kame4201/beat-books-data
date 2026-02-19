@@ -10,19 +10,19 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
-from src.entities.team_offense import TeamOffense
-from src.repositories.team_offense_repo import TeamOffenseRepository
-from src.dtos.team_offense_dto import TeamOffenseCreate
+from src.entities.team_defense import TeamDefense
+from src.repositories.team_defense_repo import TeamDefenseRepository
+from src.dtos.team_defense_dto import TeamDefenseCreate
 
 logger = logging.getLogger(__name__)
 
-PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/"
+PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/opp.htm"
 PFR_TABLE_ID = "team_stats"
 
 COLUMN_MAP = {
     "team": "tm",
     "g": "g",
-    "points": "pf",
+    "points": "pa",
     "total_yards": "yds",
     "plays_offense": "ply",
     "yds_per_play_offense": "ypp",
@@ -46,7 +46,7 @@ COLUMN_MAP = {
     "pen_fd": "firstpy",
     "score_pct": "sc_pct",
     "turnover_pct": "to_pct",
-    "exp_pts_tot": "opea",
+    "exp_pts_def_tot": "depa",
 }
 
 
@@ -85,17 +85,17 @@ def get_dataframe(season: int) -> list[dict]:
     return rows
 
 
-async def scrape_and_store_team_offense(season: int):
+async def scrape_and_store(season: int):
     db: Session = SessionLocal()
 
     try:
         parsed = get_dataframe(season)
-        repo = TeamOffenseRepository(db)
+        repo = TeamDefenseRepository(db)
 
         saved = []
         for row in parsed:
-            dto = TeamOffenseCreate(**row)
-            obj = TeamOffense(**dto.model_dump())
+            dto = TeamDefenseCreate(**row)
+            obj = TeamDefense(**dto.model_dump())
             saved_obj = repo.create(obj, commit=False)
             saved.append(saved_obj)
 

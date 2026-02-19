@@ -10,43 +10,29 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
-from src.entities.team_offense import TeamOffense
-from src.repositories.team_offense_repo import TeamOffenseRepository
-from src.dtos.team_offense_dto import TeamOffenseCreate
+from src.entities.returns import TeamReturns
+from src.repositories.returns_repo import ReturnsRepository
+from src.dtos.returns_dto import TeamReturnsCreate
 
 logger = logging.getLogger(__name__)
 
-PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/"
-PFR_TABLE_ID = "team_stats"
+PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/returns.htm"
+PFR_TABLE_ID = "returns"
 
 COLUMN_MAP = {
     "team": "tm",
     "g": "g",
-    "points": "pf",
-    "total_yards": "yds",
-    "plays_offense": "ply",
-    "yds_per_play_offense": "ypp",
-    "turnovers": "turnovers",
-    "fumbles_lost": "fl",
-    "first_down": "firstd_total",
-    "pass_cmp": "cmp",
-    "pass_att": "att_pass",
-    "pass_yds": "yds_pass",
-    "pass_td": "td_pass",
-    "pass_int": "ints",
-    "pass_net_yds_per_att": "nypa",
-    "pass_fd": "firstd_pass",
-    "rush_att": "att_rush",
-    "rush_yds": "yds_rush",
-    "rush_td": "td_rush",
-    "rush_yds_per_att": "ypa",
-    "rush_fd": "firstd_rush",
-    "penalties": "pen",
-    "penalties_yds": "yds_pen",
-    "pen_fd": "firstpy",
-    "score_pct": "sc_pct",
-    "turnover_pct": "to_pct",
-    "exp_pts_tot": "opea",
+    "punt_ret": "ret_punt",
+    "punt_ret_yds": "yds_punt",
+    "punt_ret_td": "td_punt",
+    "punt_ret_long": "lng_punt",
+    "punt_ret_yds_per_ret": "ypr_punt",
+    "kick_ret": "ret_kick",
+    "kick_ret_yds": "yds_kick",
+    "kick_ret_td": "td_kick",
+    "kick_ret_long": "lng_kick",
+    "kick_ret_yds_per_ret": "ypr_kick",
+    "all_purpose_yds": "apyd",
 }
 
 
@@ -79,23 +65,27 @@ def get_dataframe(season: int) -> list[dict]:
             if data_stat and data_stat in COLUMN_MAP:
                 row[COLUMN_MAP[data_stat]] = clean_value(cell.text.strip())
 
+        rk_cell = tr.find("th", {"data-stat": "ranker"})
+        if rk_cell and rk_cell.text.strip():
+            row["rk"] = clean_value(rk_cell.text.strip())
+
         row["season"] = season
         rows.append(row)
 
     return rows
 
 
-async def scrape_and_store_team_offense(season: int):
+async def scrape_and_store(season: int):
     db: Session = SessionLocal()
 
     try:
         parsed = get_dataframe(season)
-        repo = TeamOffenseRepository(db)
+        repo = ReturnsRepository(db)
 
         saved = []
         for row in parsed:
-            dto = TeamOffenseCreate(**row)
-            obj = TeamOffense(**dto.model_dump())
+            dto = TeamReturnsCreate(**row)
+            obj = TeamReturns(**dto.model_dump())
             saved_obj = repo.create(obj, commit=False)
             saved.append(saved_obj)
 

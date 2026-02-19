@@ -10,43 +10,40 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
-from src.entities.team_offense import TeamOffense
-from src.repositories.team_offense_repo import TeamOffenseRepository
-from src.dtos.team_offense_dto import TeamOffenseCreate
+from src.entities.kicking import Kicking
+from src.repositories.kicking_repo import KickingRepository
+from src.dtos.kicking_dto import KickingCreate
 
 logger = logging.getLogger(__name__)
 
-PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/"
-PFR_TABLE_ID = "team_stats"
+PFR_URL_TEMPLATE = "https://www.pro-football-reference.com/years/{season}/kicking.htm"
+PFR_TABLE_ID = "kicking"
 
 COLUMN_MAP = {
     "team": "tm",
     "g": "g",
-    "points": "pf",
-    "total_yards": "yds",
-    "plays_offense": "ply",
-    "yds_per_play_offense": "ypp",
-    "turnovers": "turnovers",
-    "fumbles_lost": "fl",
-    "first_down": "firstd_total",
-    "pass_cmp": "cmp",
-    "pass_att": "att_pass",
-    "pass_yds": "yds_pass",
-    "pass_td": "td_pass",
-    "pass_int": "ints",
-    "pass_net_yds_per_att": "nypa",
-    "pass_fd": "firstd_pass",
-    "rush_att": "att_rush",
-    "rush_yds": "yds_rush",
-    "rush_td": "td_rush",
-    "rush_yds_per_att": "ypa",
-    "rush_fd": "firstd_rush",
-    "penalties": "pen",
-    "penalties_yds": "yds_pen",
-    "pen_fd": "firstpy",
-    "score_pct": "sc_pct",
-    "turnover_pct": "to_pct",
-    "exp_pts_tot": "opea",
+    "fga1": "fga_0_19",
+    "fgm1": "fgm_0_19",
+    "fga2": "fga_20_29",
+    "fgm2": "fgm_20_29",
+    "fga3": "fga_30_39",
+    "fgm3": "fgm_30_39",
+    "fga4": "fga_40_49",
+    "fgm4": "fgm_40_49",
+    "fga5": "fga_50_plus",
+    "fgm5": "fgm_50_plus",
+    "fga": "fga",
+    "fgm": "fgm",
+    "fg_long": "lng",
+    "fg_perc": "fg_pct",
+    "xpa": "xpa",
+    "xpm": "xpm",
+    "xp_perc": "xp_pct",
+    "kickoffs": "ko",
+    "kickoffs_yds": "ko_yds",
+    "kickoffs_touchback": "tb",
+    "kickoffs_touchback_perc": "tb_pct",
+    "kickoffs_avg_yds": "ko_avg",
 }
 
 
@@ -69,6 +66,7 @@ def get_dataframe(season: int) -> list[dict]:
         if not cells:
             continue
 
+        # Team-level table: keyed by team
         tm_cell = tr.find("td", {"data-stat": "team"})
         if not tm_cell or not tm_cell.text.strip():
             continue
@@ -79,23 +77,28 @@ def get_dataframe(season: int) -> list[dict]:
             if data_stat and data_stat in COLUMN_MAP:
                 row[COLUMN_MAP[data_stat]] = clean_value(cell.text.strip())
 
+        # Extract rank from th if present
+        rk_cell = tr.find("th", {"data-stat": "ranker"})
+        if rk_cell and rk_cell.text.strip():
+            row["rk"] = clean_value(rk_cell.text.strip())
+
         row["season"] = season
         rows.append(row)
 
     return rows
 
 
-async def scrape_and_store_team_offense(season: int):
+async def scrape_and_store(season: int):
     db: Session = SessionLocal()
 
     try:
         parsed = get_dataframe(season)
-        repo = TeamOffenseRepository(db)
+        repo = KickingRepository(db)
 
         saved = []
         for row in parsed:
-            dto = TeamOffenseCreate(**row)
-            obj = TeamOffense(**dto.model_dump())
+            dto = KickingCreate(**row)
+            obj = Kicking(**dto.model_dump())
             saved_obj = repo.create(obj, commit=False)
             saved.append(saved_obj)
 
