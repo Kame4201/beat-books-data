@@ -1,39 +1,47 @@
-from logging.config import fileConfig
+import logging
 import os
-import sys
+from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 
-# Add the project root to sys.path so we can import src modules
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import the SQLAlchemy Base from entities
+import sys
+from pathlib import Path
 
-# Import Base and all entities for autogeneration
+# Add the parent directory to the path so we can import from src
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from src.entities.base import Base
 from src.core.config import settings
 
-# Import all entity models so they're registered with Base.metadata
+# Import all entity models so Alembic can detect them
 from src.entities.team_offense import TeamOffense
-from src.entities.defense_stats import DefenseStats
+from src.entities.team_defense import TeamDefense
 from src.entities.passing_stats import PassingStats
 from src.entities.rushing_stats import RushingStats
-from src.entities.punting_stats import PuntingStats
-from src.entities.returns import Returns
-from src.entities.return_stats import ReturnStats
-from src.entities.kicking_stats import KickingStats
-from src.entities.punting import Punting
-from src.entities.scraped_data import ScrapedData
-from src.entities.kicking import Kicking
-from src.entities.scoring_stats import ScoringStats
 from src.entities.receiving_stats import ReceivingStats
+from src.entities.defense_stats import DefenseStats
+from src.entities.kicking_stats import KickingStats
+from src.entities.punting_stats import PuntingStats
+from src.entities.return_stats import ReturnStats
+from src.entities.scoring_stats import ScoringStats
+from src.entities.kicking import Kicking
+from src.entities.punting import Punting
+from src.entities.returns import TeamReturns
+from src.entities.games import Games
+from src.entities.standings import Standings
+from src.entities.team_game import TeamGame
+
+logger = logging.getLogger("alembic.env")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Set the database URL from environment variable
+# Set the sqlalchemy.url from our settings
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # Interpret the config file for Python logging.
@@ -45,10 +53,29 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 target_metadata = Base.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+
+def _log_environment_banner() -> None:
+    """Log which environment migrations are targeting."""
+    env = settings.ENV
+    banner = f"  ALEMBIC MIGRATION TARGET: {env.upper()}  "
+    separator = "=" * len(banner)
+    logger.warning("")
+    logger.warning(separator)
+    logger.warning(banner)
+    logger.warning(separator)
+    if env == "main":
+        logger.warning("*** PRODUCTION DATABASE -- Proceed with caution ***")
+    logger.warning("")
+
+
+def _check_production_safety() -> None:
+    """Block migrations on main unless ALLOW_PRODUCTION_MIGRATE=true is set."""
+    if settings.ENV == "main":
+        if os.environ.get("ALLOW_PRODUCTION_MIGRATE") != "true":
+            raise RuntimeError(
+                "Refusing to migrate production database. "
+                "Set ALLOW_PRODUCTION_MIGRATE=true to proceed."
+            )
 
 
 def run_migrations_offline() -> None:
@@ -63,6 +90,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    _log_environment_banner()
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -82,6 +110,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    _log_environment_banner()
+    _check_production_safety()
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
