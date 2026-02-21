@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Database (required — app won't start without it)
     DATABASE_URL: str
 
-    # Scraping
+    # Scraping — rate limiting
     SCRAPE_DELAY_SECONDS: int = 60
     SCRAPE_REQUEST_TIMEOUT: int = 30  # seconds
     SCRAPE_MAX_RETRIES: int = 3
@@ -21,6 +21,12 @@ class Settings(BaseSettings):
         60,
         120,
     ]  # exponential backoff delays in seconds
+
+    # Scraping — browser interaction timing
+    SCRAPE_PAGE_LOAD_WAIT: float = 1.0  # seconds after page load / interactions
+    SCRAPE_CLICK_DELAY: float = 0.4  # seconds after button clicks
+    SCRAPE_CLOUDFLARE_INITIAL_WAIT: float = 10.0  # seconds for Cloudflare challenge
+    SCRAPE_CLOUDFLARE_EXTENDED_WAIT: float = 15.0  # if "Just a moment" still present
 
     # User-Agent rotation pool (10+ browser-like user agents)
     SCRAPE_USER_AGENTS: List[str] = [
