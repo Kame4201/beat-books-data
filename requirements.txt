@@ -30,3 +30,6 @@ pydantic-settings
 # Type stubs for mypy
 types-requests
 types-beautifulsoup4
+
+# Testing
+pytest-asyncio
