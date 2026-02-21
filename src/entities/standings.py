@@ -18,7 +18,7 @@ class Standings(Base):
 
     tm: Mapped[Optional[str]] = mapped_column(String(64))
     w: Mapped[Optional[int]] = mapped_column(Integer)
-    l: Mapped[Optional[int]] = mapped_column(Integer)  # noqa: E741
+    losses: Mapped[Optional[int]] = mapped_column("l", Integer)
     t: Mapped[Optional[int]] = mapped_column(Integer)
     win_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 3))
     pf: Mapped[Optional[int]] = mapped_column(Integer)
