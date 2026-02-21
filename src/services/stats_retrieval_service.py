@@ -23,7 +23,7 @@ class StatsRetrievalService:
         self.rushing_stats_repo = RushingStatsRepository(session)
         self.receiving_stats_repo = ReceivingStatsRepository(session)
         self.standings_repo = StandingsRepository(session)
-        self.team_game_repo = TeamGameRepository
+        self.team_game_repo = TeamGameRepository(session)
 
     def get_all_teams(
         self,
@@ -198,7 +198,6 @@ class StatsRetrievalService:
         limit = min(limit, 200)
 
         games = self.team_game_repo.find_by_season_and_week(
-            db=self.session,
             season=season,
             week=week,
             limit=limit,
@@ -207,7 +206,7 @@ class StatsRetrievalService:
             order=order,
         )
 
-        total = self.team_game_repo.count_by_season(self.session, season, week)
+        total = self.team_game_repo.count_by_season(season, week)
 
         return {
             "data": games,
