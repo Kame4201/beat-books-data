@@ -72,7 +72,7 @@ class OddsRepository:
             and_(
                 Odds.season == season,
                 Odds.week == week,
-                Odds.is_closing == True
+                Odds.is_closing.is_(True)
             )
         )
         if sportsbook:
@@ -91,7 +91,7 @@ class OddsRepository:
             and_(
                 Odds.season == season,
                 Odds.week == week,
-                Odds.is_opening == True
+                Odds.is_opening.is_(True)
             )
         )
         if sportsbook:
