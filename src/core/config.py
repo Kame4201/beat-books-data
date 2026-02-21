@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Literal
 
 
 class Settings(BaseSettings):
@@ -48,11 +48,15 @@ class Settings(BaseSettings):
     ODDS_API_BASE_URL: str = "https://api.the-odds-api.com"
 
     # App
-    ENV: str = "local"
+    ENV: Literal["local", "dev", "stage", "main"] = "local"
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
     API_HOST: str = "0.0.0.0"  # nosec B104
     API_PORT: int = 8001
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENV == "main"
 
     model_config = {"env_file": ".env"}
 
