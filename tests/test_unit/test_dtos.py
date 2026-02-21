@@ -1,6 +1,7 @@
 """
 Unit tests for DTO validation.
 """
+
 import pytest
 from decimal import Decimal
 from datetime import date
@@ -29,12 +30,7 @@ class TestTeamOffenseDTO:
     def test_valid_create(self):
         """Test creating a valid TeamOffenseCreate DTO."""
         dto = TeamOffenseCreate(
-            season=2023,
-            tm="KAN",
-            g=17,
-            pf=450,
-            yds=6000,
-            sc_pct=Decimal("45.5")
+            season=2023, tm="KAN", g=17, pf=450, yds=6000, sc_pct=Decimal("45.5")
         )
         assert dto.season == 2023
         assert dto.tm == "KAN"
@@ -72,13 +68,7 @@ class TestTeamDefenseDTO:
 
     def test_valid_create(self):
         """Test creating a valid TeamDefenseCreate DTO."""
-        dto = TeamDefenseCreate(
-            season=2023,
-            tm="KAN",
-            g=17,
-            pa=250,
-            yds=5000
-        )
+        dto = TeamDefenseCreate(season=2023, tm="KAN", g=17, pa=250, yds=5000)
         assert dto.season == 2023
         assert dto.tm == "KAN"
 
@@ -100,7 +90,7 @@ class TestPassingStatsDTO:
             cmp=400,
             att=600,
             yds=5000,
-            td=40
+            td=40,
         )
         assert dto.player_name == "Patrick Mahomes"
         assert dto.cmp == 400
@@ -117,7 +107,7 @@ class TestPassingStatsDTO:
                 season=2023,
                 player_name="Test Player",
                 tm="KAN",
-                cmp_pct=Decimal("150.0")
+                cmp_pct=Decimal("150.0"),
             )
 
 
@@ -132,7 +122,7 @@ class TestRushingStatsDTO:
             tm="SFO",
             att=250,
             yds=1200,
-            td=14
+            td=14,
         )
         assert dto.player_name == "Christian McCaffrey"
         assert dto.yds == 1200
@@ -141,10 +131,7 @@ class TestRushingStatsDTO:
         """Test that negative attempts are rejected."""
         with pytest.raises(ValidationError):
             RushingStatsCreate(
-                season=2023,
-                player_name="Test Player",
-                tm="SFO",
-                att=-10
+                season=2023, player_name="Test Player", tm="SFO", att=-10
             )
 
 
@@ -160,7 +147,7 @@ class TestReceivingStatsDTO:
             tgt=150,
             rec=120,
             yds=1700,
-            td=13
+            td=13,
         )
         assert dto.player_name == "Tyreek Hill"
         assert dto.rec == 120
@@ -177,7 +164,7 @@ class TestDefenseStatsDTO:
             tm="PIT",
             sk=Decimal("19.0"),
             comb=64,
-            solo=48
+            solo=48,
         )
         assert dto.player_name == "T.J. Watt"
         assert dto.sk == Decimal("19.0")
@@ -186,10 +173,7 @@ class TestDefenseStatsDTO:
         """Test that negative sacks are rejected."""
         with pytest.raises(ValidationError):
             DefenseStatsCreate(
-                season=2023,
-                player_name="Test Player",
-                tm="PIT",
-                sk=Decimal("-5.0")
+                season=2023, player_name="Test Player", tm="PIT", sk=Decimal("-5.0")
             )
 
 
@@ -204,7 +188,7 @@ class TestKickingStatsDTO:
             tm="BAL",
             fga=35,
             fgm=32,
-            fg_pct=Decimal("91.4")
+            fg_pct=Decimal("91.4"),
         )
         assert dto.player_name == "Justin Tucker"
         assert dto.fgm == 32
@@ -216,7 +200,7 @@ class TestKickingStatsDTO:
                 season=2023,
                 player_name="Test Kicker",
                 tm="BAL",
-                fg_pct=Decimal("150.0")
+                fg_pct=Decimal("150.0"),
             )
 
 
@@ -231,7 +215,7 @@ class TestPuntingStatsDTO:
             tm="CAR",
             pnt=75,
             yds=3500,
-            ypp=Decimal("46.7")
+            ypp=Decimal("46.7"),
         )
         assert dto.player_name == "Johnny Hekker"
         assert dto.pnt == 75
@@ -249,7 +233,7 @@ class TestReturnStatsDTO:
             pr=25,
             pr_yds=250,
             kr=30,
-            kr_yds=750
+            kr_yds=750,
         )
         assert dto.player_name == "Devin Duvernay"
         assert dto.pr_yds == 250
@@ -267,7 +251,7 @@ class TestScoringStatsDTO:
             rush_td=12,
             rec_td=6,
             all_td=18,
-            pts=108
+            pts=108,
         )
         assert dto.player_name == "Austin Ekeler"
         assert dto.all_td == 18
@@ -276,10 +260,7 @@ class TestScoringStatsDTO:
         """Test that negative touchdowns are rejected."""
         with pytest.raises(ValidationError):
             ScoringStatsCreate(
-                season=2023,
-                player_name="Test Player",
-                tm="LAC",
-                rush_td=-5
+                season=2023, player_name="Test Player", tm="LAC", rush_td=-5
             )
 
 
@@ -296,7 +277,7 @@ class TestStandingsDTO:
             t=0,
             win_pct=Decimal("0.824"),
             pf=450,
-            pa=320
+            pa=320,
         )
         assert dto.tm == "KAN"
         assert dto.w == 14
@@ -304,11 +285,7 @@ class TestStandingsDTO:
     def test_win_percentage_range(self):
         """Test win percentage must be between 0-1."""
         with pytest.raises(ValidationError):
-            StandingsCreate(
-                season=2023,
-                tm="KAN",
-                win_pct=Decimal("1.5")
-            )
+            StandingsCreate(season=2023, tm="KAN", win_pct=Decimal("1.5"))
 
     def test_negative_wins_rejected(self):
         """Test that negative wins are rejected."""
@@ -329,7 +306,7 @@ class TestGamesDTO:
             winner="KAN",
             loser="DET",
             pts_w=27,
-            pts_l=20
+            pts_l=20,
         )
         assert dto.week == 1
         assert dto.winner == "KAN"
@@ -352,12 +329,7 @@ class TestKickingDTO:
     def test_valid_create(self):
         """Test creating a valid KickingCreate DTO."""
         dto = KickingCreate(
-            season=2023,
-            tm="BAL",
-            g=17,
-            fga=35,
-            fgm=32,
-            fg_pct=Decimal("91.4")
+            season=2023, tm="BAL", g=17, fga=35, fgm=32, fg_pct=Decimal("91.4")
         )
         assert dto.season == 2023
         assert dto.tm == "BAL"
@@ -379,11 +351,7 @@ class TestKickingDTO:
     def test_percentage_validation(self):
         """Test FG percentage in valid range."""
         with pytest.raises(ValidationError):
-            KickingCreate(
-                season=2023,
-                tm="BAL",
-                fg_pct=Decimal("150.0")
-            )
+            KickingCreate(season=2023, tm="BAL", fg_pct=Decimal("150.0"))
 
     def test_empty_team_name_rejected(self):
         """Test that empty team name is rejected."""
@@ -397,12 +365,7 @@ class TestPuntingDTO:
     def test_valid_create(self):
         """Test creating a valid PuntingCreate DTO."""
         dto = PuntingCreate(
-            season=2023,
-            tm="CAR",
-            g=17,
-            pnt=75,
-            yds=3500,
-            ypp=Decimal("46.7")
+            season=2023, tm="CAR", g=17, pnt=75, yds=3500, ypp=Decimal("46.7")
         )
         assert dto.season == 2023
         assert dto.tm == "CAR"
@@ -424,11 +387,7 @@ class TestPuntingDTO:
     def test_percentage_validation(self):
         """Test touchback percentage in valid range."""
         with pytest.raises(ValidationError):
-            PuntingCreate(
-                season=2023,
-                tm="CAR",
-                tb_pct=Decimal("150.0")
-            )
+            PuntingCreate(season=2023, tm="CAR", tb_pct=Decimal("150.0"))
 
     def test_empty_team_name_rejected(self):
         """Test that empty team name is rejected."""
@@ -449,7 +408,7 @@ class TestTeamReturnsDTO:
             yds_punt=350,
             ret_kick=25,
             yds_kick=600,
-            apyd=950
+            apyd=950,
         )
         assert dto.season == 2023
         assert dto.tm == "BAL"
@@ -483,22 +442,14 @@ class TestDTOResponse:
 
     def test_team_offense_response(self):
         """Test TeamOffenseResponse includes ID."""
-        dto = TeamOffenseResponse(
-            id=1,
-            season=2023,
-            tm="KAN",
-            pf=450
-        )
+        dto = TeamOffenseResponse(id=1, season=2023, tm="KAN", pf=450)
         assert dto.id == 1
         assert dto.season == 2023
 
     def test_passing_stats_response(self):
         """Test PassingStatsResponse includes ID."""
         dto = PassingStatsResponse(
-            id=1,
-            season=2023,
-            player_name="Patrick Mahomes",
-            tm="KAN"
+            id=1, season=2023, player_name="Patrick Mahomes", tm="KAN"
         )
         assert dto.id == 1
         assert dto.player_name == "Patrick Mahomes"

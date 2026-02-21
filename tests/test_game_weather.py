@@ -1,6 +1,7 @@
 """
 Unit tests for game weather functionality.
 """
+
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
@@ -26,7 +27,7 @@ class TestGameWeatherEntity:
             wind_speed=15.5,
             precipitation=0.0,
             humidity=65.0,
-            weather_condition="Clear"
+            weather_condition="Clear",
         )
 
         assert weather.season == 2024
@@ -40,11 +41,7 @@ class TestGameWeatherEntity:
     def test_dome_stadium(self):
         """Test dome stadium with null weather fields."""
         weather = GameWeather(
-            season=2024,
-            week=5,
-            home_team="DET",
-            stadium="Ford Field",
-            is_dome=True
+            season=2024, week=5, home_team="DET", stadium="Ford Field", is_dome=True
         )
 
         assert weather.is_dome is True
@@ -67,7 +64,7 @@ class TestGameWeatherDTO:
             wind_speed=15.5,
             precipitation=0.0,
             humidity=65.0,
-            weather_condition="Clear"
+            weather_condition="Clear",
         )
 
         assert dto.season == 2024
@@ -78,10 +75,7 @@ class TestGameWeatherDTO:
         """Test that season must be > 1900."""
         with pytest.raises(Exception):  # Pydantic ValidationError
             GameWeatherCreate(
-                season=1800,  # Invalid
-                week=5,
-                home_team="GB",
-                is_dome=False
+                season=1800, week=5, home_team="GB", is_dome=False  # Invalid
             )
 
     def test_dto_validation_wind_speed(self):
@@ -92,7 +86,7 @@ class TestGameWeatherDTO:
                 week=5,
                 home_team="GB",
                 is_dome=False,
-                wind_speed=-10  # Invalid
+                wind_speed=-10,  # Invalid
             )
 
     def test_dto_validation_humidity(self):
@@ -103,17 +97,12 @@ class TestGameWeatherDTO:
                 week=5,
                 home_team="GB",
                 is_dome=False,
-                humidity=150  # Invalid
+                humidity=150,  # Invalid
             )
 
     def test_dto_optional_fields(self):
         """Test that weather fields are optional."""
-        dto = GameWeatherCreate(
-            season=2024,
-            week=5,
-            home_team="GB",
-            is_dome=False
-        )
+        dto = GameWeatherCreate(season=2024, week=5, home_team="GB", is_dome=False)
 
         assert dto.temperature is None
         assert dto.wind_speed is None
@@ -142,7 +131,7 @@ class TestGameWeatherRepository:
             stadium="Lambeau Field",
             is_dome=False,
             temperature=32.0,
-            wind_speed=15.5
+            wind_speed=15.5,
         )
 
         # Mock the session behavior
@@ -197,24 +186,17 @@ class TestGameWeatherService:
         info = service.get_stadium_info("XXX")
         assert info is None
 
-    @patch('src.services.game_weather_service.requests.get')
+    @patch("src.services.game_weather_service.requests.get")
     def test_fetch_weather_from_api(self, mock_get, service):
         """Test fetching weather from OpenWeatherMap API."""
         # Mock API response
         mock_response = Mock()
         mock_response.json.return_value = {
-            'main': {
-                'temp': 32.5,
-                'humidity': 65
-            },
-            'wind': {
-                'speed': 15.2
-            },
-            'weather': [
-                {'main': 'Clear'}
-            ],
-            'rain': {'1h': 0.0},
-            'snow': {'1h': 0.0}
+            "main": {"temp": 32.5, "humidity": 65},
+            "wind": {"speed": 15.2},
+            "weather": [{"main": "Clear"}],
+            "rain": {"1h": 0.0},
+            "snow": {"1h": 0.0},
         }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
@@ -223,19 +205,19 @@ class TestGameWeatherService:
         weather_data = service.fetch_weather_from_api(44.5013, -88.0622)
 
         # Verify results
-        assert weather_data['temperature'] == 32.5
-        assert weather_data['humidity'] == 65
-        assert weather_data['wind_speed'] == 15.2
-        assert weather_data['weather_condition'] == 'Clear'
-        assert weather_data['precipitation'] == 0.0
+        assert weather_data["temperature"] == 32.5
+        assert weather_data["humidity"] == 65
+        assert weather_data["wind_speed"] == 15.2
+        assert weather_data["weather_condition"] == "Clear"
+        assert weather_data["precipitation"] == 0.0
 
         # Verify API was called correctly
         mock_get.assert_called_once()
         call_args = mock_get.call_args
-        assert 'lat' in call_args[1]['params']
-        assert call_args[1]['params']['lat'] == 44.5013
+        assert "lat" in call_args[1]["params"]
+        assert call_args[1]["params"]["lat"] == str(44.5013)
 
-    @patch('src.services.game_weather_service.requests.get')
+    @patch("src.services.game_weather_service.requests.get")
     def test_fetch_weather_api_error(self, mock_get, service):
         """Test handling API errors."""
         mock_get.side_effect = Exception("API Error")
@@ -243,17 +225,17 @@ class TestGameWeatherService:
         with pytest.raises(Exception):
             service.fetch_weather_from_api(44.5013, -88.0622)
 
-    @patch('src.services.game_weather_service.requests.get')
+    @patch("src.services.game_weather_service.requests.get")
     def test_fetch_and_store_outdoor_game(self, mock_get, service, mock_db_session):
         """Test fetching and storing weather for outdoor game."""
         # Mock API response
         mock_response = Mock()
         mock_response.json.return_value = {
-            'main': {'temp': 32.5, 'humidity': 65},
-            'wind': {'speed': 15.2},
-            'weather': [{'main': 'Clear'}],
-            'rain': {'1h': 0.0},
-            'snow': {'1h': 0.0}
+            "main": {"temp": 32.5, "humidity": 65},
+            "wind": {"speed": 15.2},
+            "weather": [{"main": "Clear"}],
+            "rain": {"1h": 0.0},
+            "snow": {"1h": 0.0},
         }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
@@ -298,17 +280,17 @@ class TestGameWeatherService:
         assert dto_arg.is_dome is True
         assert dto_arg.temperature is None
 
-    @patch('src.services.game_weather_service.requests.get')
+    @patch("src.services.game_weather_service.requests.get")
     def test_fetch_week_weather(self, mock_get, service, mock_db_session):
         """Test fetching weather for multiple games."""
         # Mock API response
         mock_response = Mock()
         mock_response.json.return_value = {
-            'main': {'temp': 32.5, 'humidity': 65},
-            'wind': {'speed': 15.2},
-            'weather': [{'main': 'Clear'}],
-            'rain': {'1h': 0.0},
-            'snow': {'1h': 0.0}
+            "main": {"temp": 32.5, "humidity": 65},
+            "wind": {"speed": 15.2},
+            "weather": [{"main": "Clear"}],
+            "rain": {"1h": 0.0},
+            "snow": {"1h": 0.0},
         }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response

@@ -1,6 +1,7 @@
 """
 Unit tests for injury report functionality.
 """
+
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from datetime import date
@@ -24,7 +25,7 @@ class TestInjuryReportEntity:
             position="QB",
             designation="Questionable",
             injury_type="ankle",
-            report_date=date(2024, 10, 1)
+            report_date=date(2024, 10, 1),
         )
 
         assert injury.season == 2024
@@ -49,7 +50,7 @@ class TestInjuryReportDTO:
             position="QB",
             designation="Questionable",
             injury_type="ankle",
-            report_date=date(2024, 10, 1)
+            report_date=date(2024, 10, 1),
         )
 
         assert dto.season == 2024
@@ -64,7 +65,7 @@ class TestInjuryReportDTO:
                 week=5,
                 player_name="Test Player",
                 team="KC",
-                designation="Out"
+                designation="Out",
             )
 
     def test_dto_validation_week(self):
@@ -75,17 +76,13 @@ class TestInjuryReportDTO:
                 week=30,  # Invalid
                 player_name="Test Player",
                 team="KC",
-                designation="Out"
+                designation="Out",
             )
 
     def test_dto_optional_fields(self):
         """Test that position, injury_type, and report_date are optional."""
         dto = InjuryReportCreate(
-            season=2024,
-            week=5,
-            player_name="Test Player",
-            team="KC",
-            designation="Out"
+            season=2024, week=5, player_name="Test Player", team="KC", designation="Out"
         )
 
         assert dto.position is None
@@ -115,7 +112,7 @@ class TestInjuryReportRepository:
             team="KC",
             position="QB",
             designation="Questionable",
-            injury_type="ankle"
+            injury_type="ankle",
         )
 
         # Mock the session behavior
@@ -144,7 +141,7 @@ class TestInjuryReportService:
         """Create a service with mock session."""
         return InjuryReportService(mock_db_session)
 
-    @patch('src.services.injury_report_service.webdriver.Chrome')
+    @patch("src.services.injury_report_service.webdriver.Chrome")
     def test_scrape_weekly_injuries_pfr(self, mock_chrome, service):
         """Test scraping injury reports with mocked responses."""
         # Mock driver and response
@@ -196,7 +193,7 @@ class TestInjuryReportService:
         mock_driver.get.assert_called_once()
         mock_driver.quit.assert_called_once()
 
-    @patch('src.services.injury_report_service.webdriver.Chrome')
+    @patch("src.services.injury_report_service.webdriver.Chrome")
     def test_scrape_no_table(self, mock_chrome, service):
         """Test scraping when no injury table is found."""
         mock_driver = MagicMock()
@@ -220,7 +217,7 @@ class TestInjuryReportService:
 
         mock_injuries = [
             Mock(player_name="Player 1", team="KC"),
-            Mock(player_name="Player 2", team="BUF")
+            Mock(player_name="Player 2", team="BUF"),
         ]
         mock_repo.get_by_week.return_value = mock_injuries
 

@@ -1,6 +1,7 @@
 """
 Entity for tracking weekly injury reports.
 """
+
 from __future__ import annotations
 
 from sqlalchemy import Column, Integer, String, Date
@@ -14,7 +15,8 @@ class InjuryReport(Base):
     Data typically scraped from Pro-Football-Reference or ESPN.
     Includes injury status (Questionable/Doubtful/Out) and injury type.
     """
-    __tablename__ = 'injury_reports'
+
+    __tablename__ = "injury_reports"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     season = Column(Integer, nullable=False, index=True)
