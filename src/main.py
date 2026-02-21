@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from src.services import scrape_service, team_offense_service, excel_scraper_service
 
-app = FastAPI()
+app = FastAPI(title="beat-books-data", version="0.1.0")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "beat-books-data", "version": "0.1.0"}
 
 
 @app.get("/")
