@@ -15,10 +15,11 @@ Job lifecycle:  pending -> running -> complete
     Each target is processed sequentially with a configurable delay between
     requests to respect Pro-Football-Reference rate limits.
 """
+
 from __future__ import annotations
 
 import asyncio
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -44,10 +45,7 @@ class BatchScrapeService:
         self.session = session
         self.job_repo = ScrapeJobRepository(session)
 
-    async def create_batch_job(
-        self,
-        targets: List[Dict[str, any]]
-    ) -> int:
+    async def create_batch_job(self, targets: List[Dict[str, Any]]) -> int:
         """
         Create a new batch scrape job.
 
@@ -66,20 +64,16 @@ class BatchScrapeService:
 
         # Validate targets format
         for target in targets:
-            if 'team' not in target or 'year' not in target:
-                raise ValueError(
-                    "Each target must have 'team' and 'year' keys"
-                )
+            if "team" not in target or "year" not in target:
+                raise ValueError("Each target must have 'team' and 'year' keys")
 
         # Create job record
         job = self.job_repo.create_job(total_urls=len(targets))
         return job.id
 
     async def execute_batch_job(
-        self,
-        job_id: int,
-        targets: List[Dict[str, any]]
-    ) -> Dict[str, any]:
+        self, job_id: int, targets: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Execute a batch scrape job.
 
@@ -102,20 +96,16 @@ class BatchScrapeService:
             raise ValueError(f"Job {job_id} not found")
 
         # Mark job as running
-        self.job_repo.update_job_status(job_id, 'running')
+        self.job_repo.update_job_status(job_id, "running")
 
-        results = {
-            'job_id': job_id,
-            'total': len(targets),
-            'succeeded': 0,
-            'failed': 0,
-            'errors': []
-        }
+        succeeded = 0
+        failed_count = 0
+        errors: List[Dict[str, Any]] = []
 
         # Process each target sequentially
         for idx, target in enumerate(targets):
-            team = target['team']
-            year = target['year']
+            team = target["team"]
+            year = target["year"]
 
             try:
                 # Scrape and store
@@ -123,19 +113,19 @@ class BatchScrapeService:
 
                 # Increment processed count
                 self.job_repo.increment_processed(job_id)
-                results['succeeded'] += 1
+                succeeded += 1
 
             except Exception as e:
                 # Record failure but continue processing
                 error_info = {
-                    'target': target,
-                    'error': str(e),
-                    'timestamp': datetime.utcnow().isoformat()
+                    "target": target,
+                    "error": str(e),
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
 
                 self.job_repo.increment_failed(job_id, error_info)
-                results['failed'] += 1
-                results['errors'].append(error_info)
+                failed_count += 1
+                errors.append(error_info)
 
             # Rate limiting: configurable delay between requests to avoid
             # 403 bans from Pro-Football-Reference. Uses settings.SCRAPE_DELAY_SECONDS
@@ -147,12 +137,15 @@ class BatchScrapeService:
         # Mark job as complete
         self.job_repo.mark_complete(job_id)
 
-        return results
+        return {
+            "job_id": job_id,
+            "total": len(targets),
+            "succeeded": succeeded,
+            "failed": failed_count,
+            "errors": errors,
+        }
 
-    async def run_batch_scrape(
-        self,
-        targets: List[Dict[str, any]]
-    ) -> Dict[str, any]:
+    async def run_batch_scrape(self, targets: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Convenience method to create and execute a batch scrape in one call.
 
@@ -166,7 +159,7 @@ class BatchScrapeService:
         job_id = await self.create_batch_job(targets)
         return await self.execute_batch_job(job_id, targets)
 
-    def get_job_status(self, job_id: int) -> Optional[Dict[str, any]]:
+    def get_job_status(self, job_id: int) -> Optional[Dict[str, Any]]:
         """
         Get the current status of a batch scrape job.
 
@@ -181,21 +174,19 @@ class BatchScrapeService:
             return None
 
         return {
-            'job_id': job.id,
-            'status': job.status,
-            'total_urls': job.total_urls,
-            'processed': job.processed,
-            'failed': job.failed,
-            'errors': job.errors,
-            'created_at': job.created_at.isoformat(),
-            'completed_at': job.completed_at.isoformat() if job.completed_at else None
+            "job_id": job.id,
+            "status": job.status,
+            "total_urls": job.total_urls,
+            "processed": job.processed,
+            "failed": job.failed,
+            "errors": job.errors,
+            "created_at": job.created_at.isoformat(),
+            "completed_at": job.completed_at.isoformat() if job.completed_at else None,
         }
 
     def list_jobs(
-        self,
-        status: Optional[str] = None,
-        limit: int = 100
-    ) -> List[Dict[str, any]]:
+        self, status: Optional[str] = None, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """
         List batch scrape jobs, optionally filtered by status.
 
@@ -213,22 +204,22 @@ class BatchScrapeService:
 
         return [
             {
-                'job_id': job.id,
-                'status': job.status,
-                'total_urls': job.total_urls,
-                'processed': job.processed,
-                'failed': job.failed,
-                'created_at': job.created_at.isoformat(),
-                'completed_at': job.completed_at.isoformat() if job.completed_at else None
+                "job_id": job.id,
+                "status": job.status,
+                "total_urls": job.total_urls,
+                "processed": job.processed,
+                "failed": job.failed,
+                "created_at": job.created_at.isoformat(),
+                "completed_at": (
+                    job.completed_at.isoformat() if job.completed_at else None
+                ),
             }
             for job in jobs
         ]
 
 
 # Convenience function for standalone use
-async def batch_scrape(
-    targets: List[Dict[str, any]]
-) -> Dict[str, any]:
+async def batch_scrape(targets: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Convenience function to run a batch scrape with a new session.
 

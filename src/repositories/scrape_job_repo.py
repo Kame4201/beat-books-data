@@ -12,11 +12,13 @@ in the future, these should be converted to atomic SQL UPDATE
 statements (e.g., UPDATE ... SET processed = processed + 1) to
 avoid lost-update race conditions.
 """
+
 from __future__ import annotations
 
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from sqlalchemy import select, update
+from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 
 from src.entities.scrape_job import ScrapeJob
 from src.repositories.base_repo import BaseRepository
@@ -44,19 +46,12 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
             Created ScrapeJob entity
         """
         job = ScrapeJob(
-            status='pending',
-            total_urls=total_urls,
-            processed=0,
-            failed=0,
-            errors=None
+            status="pending", total_urls=total_urls, processed=0, failed=0, errors=None
         )
         return self.create(job, commit=True)
 
     def update_job_status(
-        self,
-        job_id: int,
-        status: str,
-        commit: bool = True
+        self, job_id: int, status: str, commit: bool = True
     ) -> Optional[ScrapeJob]:
         """
         Update the status of a job.
@@ -76,9 +71,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
         return None
 
     def increment_processed(
-        self,
-        job_id: int,
-        commit: bool = True
+        self, job_id: int, commit: bool = True
     ) -> Optional[ScrapeJob]:
         """
         Increment the processed count for a job.
@@ -97,10 +90,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
         return None
 
     def increment_failed(
-        self,
-        job_id: int,
-        error_info: dict,
-        commit: bool = True
+        self, job_id: int, error_info: dict, commit: bool = True
     ) -> Optional[ScrapeJob]:
         """
         Increment the failed count and add error information.
@@ -121,17 +111,14 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
             if job.errors is None:
                 job.errors = []
 
-            # Append new error
+            # Append new error and flag as modified for SQLAlchemy JSON change detection
             job.errors.append(error_info)
+            flag_modified(job, "errors")
 
             return self.update(job, commit=commit)
         return None
 
-    def mark_complete(
-        self,
-        job_id: int,
-        commit: bool = True
-    ) -> Optional[ScrapeJob]:
+    def mark_complete(self, job_id: int, commit: bool = True) -> Optional[ScrapeJob]:
         """
         Mark a job as complete and set completion timestamp.
 
@@ -146,16 +133,12 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
 
         job = self.get_by_id(job_id)
         if job:
-            job.status = 'complete'
+            job.status = "complete"
             job.completed_at = datetime.utcnow()
             return self.update(job, commit=commit)
         return None
 
-    def get_jobs_by_status(
-        self,
-        status: str,
-        limit: int = 100
-    ) -> List[ScrapeJob]:
+    def get_jobs_by_status(self, status: str, limit: int = 100) -> List[ScrapeJob]:
         """
         Get all jobs with a specific status.
 
@@ -166,9 +149,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
         Returns:
             List of ScrapeJob entities
         """
-        stmt = select(ScrapeJob).where(
-            ScrapeJob.status == status
-        ).limit(limit)
+        stmt = select(ScrapeJob).where(ScrapeJob.status == status).limit(limit)
         return list(self.session.execute(stmt).scalars().all())
 
     def get_all_jobs(self, limit: int = 100) -> List[ScrapeJob]:

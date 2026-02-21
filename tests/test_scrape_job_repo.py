@@ -1,6 +1,7 @@
 """
 Unit tests for scrape job repository.
 """
+
 import pytest
 from datetime import datetime
 from sqlalchemy import create_engine
@@ -36,7 +37,7 @@ class TestScrapeJobRepository:
         job = scrape_job_repo.create_job(total_urls=10)
 
         assert job.id is not None
-        assert job.status == 'pending'
+        assert job.status == "pending"
         assert job.total_urls == 10
         assert job.processed == 0
         assert job.failed == 0
@@ -47,15 +48,15 @@ class TestScrapeJobRepository:
         job = scrape_job_repo.create_job(total_urls=5)
         original_id = job.id
 
-        updated = scrape_job_repo.update_job_status(original_id, 'running')
+        updated = scrape_job_repo.update_job_status(original_id, "running")
 
         assert updated is not None
         assert updated.id == original_id
-        assert updated.status == 'running'
+        assert updated.status == "running"
 
     def test_update_job_status_not_found(self, scrape_job_repo):
         """Test updating non-existent job."""
-        result = scrape_job_repo.update_job_status(999, 'running')
+        result = scrape_job_repo.update_job_status(999, "running")
 
         assert result is None
 
@@ -80,7 +81,7 @@ class TestScrapeJobRepository:
 
         error_info = {
             "target": {"team": "chiefs", "year": 2024},
-            "error": "Connection timeout"
+            "error": "Connection timeout",
         }
 
         updated = scrape_job_repo.increment_failed(job_id, error_info)
@@ -88,7 +89,7 @@ class TestScrapeJobRepository:
         assert updated is not None
         assert updated.failed == 1
         assert len(updated.errors) == 1
-        assert updated.errors[0]['error'] == "Connection timeout"
+        assert updated.errors[0]["error"] == "Connection timeout"
 
     def test_increment_failed_multiple_errors(self, scrape_job_repo):
         """Test accumulating multiple errors."""
@@ -112,7 +113,7 @@ class TestScrapeJobRepository:
         updated = scrape_job_repo.mark_complete(job_id)
 
         assert updated is not None
-        assert updated.status == 'complete'
+        assert updated.status == "complete"
         assert updated.completed_at is not None
 
     def test_get_jobs_by_status(self, scrape_job_repo):
@@ -122,14 +123,14 @@ class TestScrapeJobRepository:
         job2 = scrape_job_repo.create_job(total_urls=10)
         job3 = scrape_job_repo.create_job(total_urls=15)
 
-        scrape_job_repo.update_job_status(job1.id, 'running')
-        scrape_job_repo.update_job_status(job2.id, 'running')
-        scrape_job_repo.update_job_status(job3.id, 'complete')
+        scrape_job_repo.update_job_status(job1.id, "running")
+        scrape_job_repo.update_job_status(job2.id, "running")
+        scrape_job_repo.update_job_status(job3.id, "complete")
 
-        running_jobs = scrape_job_repo.get_jobs_by_status('running')
+        running_jobs = scrape_job_repo.get_jobs_by_status("running")
 
         assert len(running_jobs) == 2
-        assert all(job.status == 'running' for job in running_jobs)
+        assert all(job.status == "running" for job in running_jobs)
 
     def test_get_all_jobs(self, scrape_job_repo):
         """Test getting all jobs."""
