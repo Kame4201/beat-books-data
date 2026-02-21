@@ -277,11 +277,12 @@ async def scrape_and_store(team: str, year: int):
         scraped_games = await retry_with_backoff(
             download_team_gamelog, team, year, url=url
         )
+        repo = TeamGameRepository(db)
         saved = []
 
         for game in scraped_games:
             model_obj = map_scraped_to_model(game, year)
-            saved_obj = TeamGameRepository.create_or_skip(db, model_obj)
+            saved_obj = repo.create_or_skip(model_obj)
             saved.append(saved_obj)
 
         logger.info(
