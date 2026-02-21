@@ -34,6 +34,8 @@ from src.entities.returns import TeamReturns
 from src.entities.games import Games
 from src.entities.standings import Standings
 from src.entities.team_game import TeamGame
+from src.entities.injury_report import InjuryReport
+from src.entities.game_weather import GameWeather
 
 logger = logging.getLogger("alembic.env")
 
