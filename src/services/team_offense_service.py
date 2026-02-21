@@ -89,7 +89,10 @@ async def scrape_and_store_team_offense(season: int):
     db: Session = SessionLocal()
 
     try:
+        logger.info("Fetching team offense data for season %d", season)
         parsed = get_dataframe(season)
+        logger.info("Parsed %d team offense records for season %d", len(parsed), season)
+
         repo = TeamOffenseRepository(db)
 
         saved = []
@@ -100,7 +103,19 @@ async def scrape_and_store_team_offense(season: int):
             saved.append(saved_obj)
 
         db.commit()
+
+        logger.info(
+            "Successfully saved %d team offense records for season %d",
+            len(saved),
+            season,
+        )
         return saved
+
+    except Exception:
+        logger.error(
+            "Failed to scrape team offense for season %d", season, exc_info=True
+        )
+        raise
 
     finally:
         db.close()
