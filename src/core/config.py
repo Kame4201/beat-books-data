@@ -3,10 +3,14 @@ from typing import List
 
 
 class Settings(BaseSettings):
-    """Centralized configuration for beat-books-data service."""
+    """Centralized configuration for beat-books-data service.
 
-    # Database
-    DATABASE_URL: str = ""
+    Required variables will cause a clear ValidationError at startup
+    if missing. See .env.example for the full variable list.
+    """
+
+    # Database (required — app won't start without it)
+    DATABASE_URL: str
 
     # Scraping
     SCRAPE_DELAY_SECONDS: int = 60
@@ -44,6 +48,8 @@ class Settings(BaseSettings):
     ODDS_API_BASE_URL: str = "https://api.the-odds-api.com"
 
     # App
+    ENV: str = "local"
+    DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
     API_HOST: str = "0.0.0.0"  # nosec B104
     API_PORT: int = 8001
@@ -51,4 +57,4 @@ class Settings(BaseSettings):
     model_config = {"env_file": ".env"}
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # populated by env/.env at runtime
