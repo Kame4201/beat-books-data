@@ -93,28 +93,22 @@ def clean_value(v):
     return v
 
 
-def fetch_page_with_selenium(url: str) -> str:
-    """
-    Fetch a page using Selenium stealth to bypass Cloudflare/bot detection.
+def create_chrome_driver(*, headless: bool = True) -> webdriver.Chrome:
+    """Create a configured Chrome WebDriver using centralized settings.
 
-    Includes: headless Chrome, anti-automation flags, random user-agent,
-    optional proxy, Cloudflare wait, selenium_stealth integration,
-    rate limiting via SCRAPE_DELAY_SECONDS.
+    Consolidates Selenium browser setup (headless, anti-detection, user-agent
+    rotation, proxy support) into a single factory so scrape_service.py and
+    fetch_page_with_selenium share the same configuration.
 
     Args:
-        url: URL to fetch
+        headless: Run Chrome in headless mode (default True).
 
     Returns:
-        Page source HTML string
+        Configured Chrome WebDriver instance. Caller must call driver.quit().
     """
-    clean_url = strip_url_hash(url)
-    if clean_url != url:
-        logger.info(f"Stripped hash fragment from URL: {url} -> {clean_url}")
-        url = clean_url
-
-    time.sleep(settings.SCRAPE_DELAY_SECONDS)
-
     options = Options()
+    if headless:
+        options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -139,17 +133,44 @@ def fetch_page_with_selenium(url: str) -> str:
 
     driver.set_page_load_timeout(settings.SCRAPE_REQUEST_TIMEOUT)
 
+    # Hide webdriver property from detection scripts
     driver.execute_script(
         "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
     )
 
+    return driver
+
+
+def fetch_page_with_selenium(url: str) -> str:
+    """
+    Fetch a page using Selenium stealth to bypass Cloudflare/bot detection.
+
+    Includes: headless Chrome, anti-automation flags, random user-agent,
+    optional proxy, Cloudflare wait, selenium_stealth integration,
+    rate limiting via SCRAPE_DELAY_SECONDS.
+
+    Args:
+        url: URL to fetch
+
+    Returns:
+        Page source HTML string
+    """
+    clean_url = strip_url_hash(url)
+    if clean_url != url:
+        logger.info(f"Stripped hash fragment from URL: {url} -> {clean_url}")
+        url = clean_url
+
+    time.sleep(settings.SCRAPE_DELAY_SECONDS)
+
+    driver = create_chrome_driver()
+
     try:
         driver.get(url)
-        time.sleep(10)  # Wait for Cloudflare challenge to auto-resolve
+        time.sleep(settings.SCRAPE_CLOUDFLARE_INITIAL_WAIT)
 
         if "Just a moment" in driver.title:
             logger.info("Waiting for Cloudflare challenge...")
-            time.sleep(15)
+            time.sleep(settings.SCRAPE_CLOUDFLARE_EXTENDED_WAIT)
 
         page_source = driver.page_source
         logger.info(
