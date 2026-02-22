@@ -14,8 +14,8 @@ sqlalchemy
 psycopg2-binary
 alembic
 
-# If you plan JWT auth soon
-python-jose
+# JWT auth
+python-jose[cryptography]
 passlib[bcrypt]
 
 # If scraping code uses aiohttp or requests, include these:
@@ -34,3 +34,6 @@ pydantic-settings
 # Type stubs for mypy
 types-requests
 types-beautifulsoup4
+
+# Testing
+pytest-asyncio
