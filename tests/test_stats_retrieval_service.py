@@ -1,4 +1,5 @@
 """Unit tests for StatsRetrievalService."""
+
 import pytest
 from unittest.mock import Mock, MagicMock
 from decimal import Decimal
