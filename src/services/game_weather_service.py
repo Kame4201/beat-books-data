@@ -1,6 +1,7 @@
 """
 Service for fetching and managing game weather data.
 """
+
 from typing import List, Optional, Dict
 from datetime import datetime
 import requests
@@ -11,41 +12,40 @@ from src.repositories.game_weather_repo import GameWeatherRepository
 from src.dtos.game_weather_dto import GameWeatherCreate
 from src.entities.game_weather import GameWeather
 
-
 # Stadium information: team -> (stadium_name, is_dome, latitude, longitude)
 STADIUM_INFO: Dict[str, tuple] = {
-    'ARI': ('State Farm Stadium', True, 33.5276, -112.2626),
-    'ATL': ('Mercedes-Benz Stadium', True, 33.7553, -84.4009),
-    'BAL': ('M&T Bank Stadium', False, 39.2780, -76.6227),
-    'BUF': ('Highmark Stadium', False, 42.7738, -78.7870),
-    'CAR': ('Bank of America Stadium', False, 35.2258, -80.8530),
-    'CHI': ('Soldier Field', False, 41.8623, -87.6167),
-    'CIN': ('Paycor Stadium', False, 39.0954, -84.5160),
-    'CLE': ('Cleveland Browns Stadium', False, 41.5061, -81.6995),
-    'DAL': ('AT&T Stadium', True, 32.7473, -97.0945),
-    'DEN': ('Empower Field at Mile High', False, 39.7439, -105.0201),
-    'DET': ('Ford Field', True, 42.3400, -83.0456),
-    'GB': ('Lambeau Field', False, 44.5013, -88.0622),
-    'HOU': ('NRG Stadium', True, 29.6847, -95.4107),
-    'IND': ('Lucas Oil Stadium', True, 39.7601, -86.1639),
-    'JAX': ('TIAA Bank Field', False, 30.3239, -81.6373),
-    'KC': ('GEHA Field at Arrowhead Stadium', False, 39.0489, -94.4839),
-    'LAC': ('SoFi Stadium', True, 33.9535, -118.3392),
-    'LAR': ('SoFi Stadium', True, 33.9535, -118.3392),
-    'LV': ('Allegiant Stadium', True, 36.0909, -115.1833),
-    'MIA': ('Hard Rock Stadium', False, 25.9580, -80.2389),
-    'MIN': ('U.S. Bank Stadium', True, 44.9738, -93.2577),
-    'NE': ('Gillette Stadium', False, 42.0909, -71.2643),
-    'NO': ('Caesars Superdome', True, 29.9511, -90.0812),
-    'NYG': ('MetLife Stadium', False, 40.8128, -74.0742),
-    'NYJ': ('MetLife Stadium', False, 40.8128, -74.0742),
-    'PHI': ('Lincoln Financial Field', False, 39.9008, -75.1675),
-    'PIT': ('Acrisure Stadium', False, 40.4468, -80.0158),
-    'SEA': ('Lumen Field', False, 47.5952, -122.3316),
-    'SF': ('Levi\'s Stadium', False, 37.4032, -121.9698),
-    'TB': ('Raymond James Stadium', False, 27.9759, -82.5033),
-    'TEN': ('Nissan Stadium', False, 36.1665, -86.7713),
-    'WAS': ('FedExField', False, 38.9076, -76.8645),
+    "ARI": ("State Farm Stadium", True, 33.5276, -112.2626),
+    "ATL": ("Mercedes-Benz Stadium", True, 33.7553, -84.4009),
+    "BAL": ("M&T Bank Stadium", False, 39.2780, -76.6227),
+    "BUF": ("Highmark Stadium", False, 42.7738, -78.7870),
+    "CAR": ("Bank of America Stadium", False, 35.2258, -80.8530),
+    "CHI": ("Soldier Field", False, 41.8623, -87.6167),
+    "CIN": ("Paycor Stadium", False, 39.0954, -84.5160),
+    "CLE": ("Cleveland Browns Stadium", False, 41.5061, -81.6995),
+    "DAL": ("AT&T Stadium", True, 32.7473, -97.0945),
+    "DEN": ("Empower Field at Mile High", False, 39.7439, -105.0201),
+    "DET": ("Ford Field", True, 42.3400, -83.0456),
+    "GB": ("Lambeau Field", False, 44.5013, -88.0622),
+    "HOU": ("NRG Stadium", True, 29.6847, -95.4107),
+    "IND": ("Lucas Oil Stadium", True, 39.7601, -86.1639),
+    "JAX": ("TIAA Bank Field", False, 30.3239, -81.6373),
+    "KC": ("GEHA Field at Arrowhead Stadium", False, 39.0489, -94.4839),
+    "LAC": ("SoFi Stadium", True, 33.9535, -118.3392),
+    "LAR": ("SoFi Stadium", True, 33.9535, -118.3392),
+    "LV": ("Allegiant Stadium", True, 36.0909, -115.1833),
+    "MIA": ("Hard Rock Stadium", False, 25.9580, -80.2389),
+    "MIN": ("U.S. Bank Stadium", True, 44.9738, -93.2577),
+    "NE": ("Gillette Stadium", False, 42.0909, -71.2643),
+    "NO": ("Caesars Superdome", True, 29.9511, -90.0812),
+    "NYG": ("MetLife Stadium", False, 40.8128, -74.0742),
+    "NYJ": ("MetLife Stadium", False, 40.8128, -74.0742),
+    "PHI": ("Lincoln Financial Field", False, 39.9008, -75.1675),
+    "PIT": ("Acrisure Stadium", False, 40.4468, -80.0158),
+    "SEA": ("Lumen Field", False, 47.5952, -122.3316),
+    "SF": ("Levi's Stadium", False, 37.4032, -121.9698),
+    "TB": ("Raymond James Stadium", False, 27.9759, -82.5033),
+    "TEN": ("Nissan Stadium", False, 36.1665, -86.7713),
+    "WAS": ("FedExField", False, 38.9076, -76.8645),
 }
 
 
@@ -56,7 +56,9 @@ class GameWeatherService:
     Uses OpenWeatherMap API to fetch weather conditions for outdoor stadium games.
     """
 
-    def __init__(self, db_session: Optional[SessionLocal] = None, api_key: Optional[str] = None):
+    def __init__(
+        self, db_session: Optional[SessionLocal] = None, api_key: Optional[str] = None
+    ):
         """
         Initialize the service.
 
@@ -69,7 +71,9 @@ class GameWeatherService:
         self.api_key = api_key or settings.OPENWEATHER_API_KEY
 
         if not self.api_key:
-            print("Warning: OPENWEATHER_API_KEY not set. Weather fetching will not work.")
+            print(
+                "Warning: OPENWEATHER_API_KEY not set. Weather fetching will not work."
+            )
 
     def __enter__(self):
         return self
@@ -90,7 +94,9 @@ class GameWeatherService:
         """
         return STADIUM_INFO.get(team.upper())
 
-    def fetch_weather_from_api(self, latitude: float, longitude: float, game_time: Optional[datetime] = None) -> dict:
+    def fetch_weather_from_api(
+        self, latitude: float, longitude: float, game_time: Optional[datetime] = None
+    ) -> dict:
         """
         Fetch weather data from OpenWeatherMap API.
 
@@ -111,10 +117,10 @@ class GameWeatherService:
         # Use current weather endpoint (could be extended to use forecast API)
         url = "https://api.openweathermap.org/data/2.5/weather"
         params = {
-            'lat': latitude,
-            'lon': longitude,
-            'appid': self.api_key,
-            'units': 'imperial'  # Fahrenheit
+            "lat": latitude,
+            "lon": longitude,
+            "appid": self.api_key,
+            "units": "imperial",  # Fahrenheit
         }
 
         try:
@@ -124,11 +130,14 @@ class GameWeatherService:
 
             # Extract relevant weather data
             weather_data = {
-                'temperature': data['main'].get('temp'),
-                'humidity': data['main'].get('humidity'),
-                'wind_speed': data['wind'].get('speed'),
-                'weather_condition': data['weather'][0].get('main') if data.get('weather') else None,
-                'precipitation': data.get('rain', {}).get('1h', 0) + data.get('snow', {}).get('1h', 0),
+                "temperature": data["main"].get("temp"),
+                "humidity": data["main"].get("humidity"),
+                "wind_speed": data["wind"].get("speed"),
+                "weather_condition": (
+                    data["weather"][0].get("main") if data.get("weather") else None
+                ),
+                "precipitation": data.get("rain", {}).get("1h", 0)
+                + data.get("snow", {}).get("1h", 0),
             }
 
             return weather_data
@@ -136,7 +145,13 @@ class GameWeatherService:
         except requests.exceptions.RequestException as e:
             raise Exception(f"Failed to fetch weather data: {e}")
 
-    def fetch_and_store_game_weather(self, season: int, week: int, home_team: str, game_time: Optional[datetime] = None) -> Optional[GameWeather]:
+    def fetch_and_store_game_weather(
+        self,
+        season: int,
+        week: int,
+        home_team: str,
+        game_time: Optional[datetime] = None,
+    ) -> Optional[GameWeather]:
         """
         Fetch weather data for a game and store it in the database.
 
@@ -166,7 +181,7 @@ class GameWeatherService:
                 home_team=home_team,
                 stadium=stadium_name,
                 is_dome=True,
-                game_time=game_time
+                game_time=game_time,
             )
             return self.repo.upsert_game_weather(dto)
 
@@ -180,12 +195,12 @@ class GameWeatherService:
                 home_team=home_team,
                 stadium=stadium_name,
                 is_dome=False,
-                temperature=weather_data.get('temperature'),
-                wind_speed=weather_data.get('wind_speed'),
-                precipitation=weather_data.get('precipitation'),
-                humidity=weather_data.get('humidity'),
-                weather_condition=weather_data.get('weather_condition'),
-                game_time=game_time
+                temperature=weather_data.get("temperature"),
+                wind_speed=weather_data.get("wind_speed"),
+                precipitation=weather_data.get("precipitation"),
+                humidity=weather_data.get("humidity"),
+                weather_condition=weather_data.get("weather_condition"),
+                game_time=game_time,
             )
 
             return self.repo.upsert_game_weather(dto)
@@ -199,11 +214,13 @@ class GameWeatherService:
                 home_team=home_team,
                 stadium=stadium_name,
                 is_dome=False,
-                game_time=game_time
+                game_time=game_time,
             )
             return self.repo.upsert_game_weather(dto)
 
-    def fetch_week_weather(self, season: int, week: int, home_teams: List[str]) -> List[GameWeather]:
+    def fetch_week_weather(
+        self, season: int, week: int, home_teams: List[str]
+    ) -> List[GameWeather]:
         """
         Fetch weather data for multiple games in a week.
 

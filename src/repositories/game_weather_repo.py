@@ -1,6 +1,7 @@
 """
 Repository for game weather data access.
 """
+
 from __future__ import annotations
 
 from typing import List, Optional
@@ -44,7 +45,7 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
             humidity=dto.humidity,
             weather_condition=dto.weather_condition,
             game_time=dto.game_time,
-            fetched_at=dto.fetched_at
+            fetched_at=dto.fetched_at,
         )
         return self.create(entity, commit=True)
 
@@ -59,15 +60,16 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
         Returns:
             List of GameWeather entities
         """
-        stmt = select(GameWeather).where(
-            and_(
-                GameWeather.season == season,
-                GameWeather.week == week
-            )
-        ).order_by(GameWeather.home_team)
+        stmt = (
+            select(GameWeather)
+            .where(and_(GameWeather.season == season, GameWeather.week == week))
+            .order_by(GameWeather.home_team)
+        )
         return list(self.session.execute(stmt).scalars().all())
 
-    def get_by_game(self, season: int, week: int, home_team: str) -> Optional[GameWeather]:
+    def get_by_game(
+        self, season: int, week: int, home_team: str
+    ) -> Optional[GameWeather]:
         """
         Get weather data for a specific game.
 
@@ -83,7 +85,7 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
             and_(
                 GameWeather.season == season,
                 GameWeather.week == week,
-                GameWeather.home_team == home_team
+                GameWeather.home_team == home_team,
             )
         )
         return self.session.execute(stmt).scalar_one_or_none()
@@ -99,13 +101,17 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
         Returns:
             List of GameWeather entities for outdoor games
         """
-        stmt = select(GameWeather).where(
-            and_(
-                GameWeather.season == season,
-                GameWeather.week == week,
-                GameWeather.is_dome == False
+        stmt = (
+            select(GameWeather)
+            .where(
+                and_(
+                    GameWeather.season == season,
+                    GameWeather.week == week,
+                    ~GameWeather.is_dome,
+                )
             )
-        ).order_by(GameWeather.home_team)
+            .order_by(GameWeather.home_team)
+        )
         return list(self.session.execute(stmt).scalars().all())
 
     def delete_by_game(self, season: int, week: int, home_team: str) -> bool:

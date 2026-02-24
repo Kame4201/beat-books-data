@@ -1,9 +1,10 @@
 """
 Repository for injury report data access.
 """
+
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_
 
@@ -40,7 +41,7 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
             position=dto.position,
             designation=dto.designation,
             injury_type=dto.injury_type,
-            report_date=dto.report_date
+            report_date=dto.report_date,
         )
         return self.create(entity, commit=True)
 
@@ -55,12 +56,11 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         Returns:
             List of InjuryReport entities
         """
-        stmt = select(InjuryReport).where(
-            and_(
-                InjuryReport.season == season,
-                InjuryReport.week == week
-            )
-        ).order_by(InjuryReport.team, InjuryReport.player_name)
+        stmt = (
+            select(InjuryReport)
+            .where(and_(InjuryReport.season == season, InjuryReport.week == week))
+            .order_by(InjuryReport.team, InjuryReport.player_name)
+        )
         return list(self.session.execute(stmt).scalars().all())
 
     def get_by_team(self, season: int, week: int, team: str) -> List[InjuryReport]:
@@ -75,13 +75,17 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         Returns:
             List of InjuryReport entities
         """
-        stmt = select(InjuryReport).where(
-            and_(
-                InjuryReport.season == season,
-                InjuryReport.week == week,
-                InjuryReport.team == team
+        stmt = (
+            select(InjuryReport)
+            .where(
+                and_(
+                    InjuryReport.season == season,
+                    InjuryReport.week == week,
+                    InjuryReport.team == team,
+                )
             )
-        ).order_by(InjuryReport.player_name)
+            .order_by(InjuryReport.player_name)
+        )
         return list(self.session.execute(stmt).scalars().all())
 
     def get_by_player(self, season: int, player_name: str) -> List[InjuryReport]:
@@ -95,12 +99,16 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         Returns:
             List of InjuryReport entities
         """
-        stmt = select(InjuryReport).where(
-            and_(
-                InjuryReport.season == season,
-                InjuryReport.player_name == player_name
+        stmt = (
+            select(InjuryReport)
+            .where(
+                and_(
+                    InjuryReport.season == season,
+                    InjuryReport.player_name == player_name,
+                )
             )
-        ).order_by(InjuryReport.week)
+            .order_by(InjuryReport.week)
+        )
         return list(self.session.execute(stmt).scalars().all())
 
     def delete_by_week(self, season: int, week: int) -> int:
@@ -121,7 +129,9 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         self.session.commit()
         return count
 
-    def upsert_week_reports(self, season: int, week: int, dtos: List[InjuryReportCreate]) -> List[InjuryReport]:
+    def upsert_week_reports(
+        self, season: int, week: int, dtos: List[InjuryReportCreate]
+    ) -> List[InjuryReport]:
         """
         Delete existing reports for a week and insert new ones (idempotent upsert).
 
