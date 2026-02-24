@@ -8,9 +8,14 @@ BeautifulSoup parsing is unaffected.
 Activated only when SCRAPE_BACKEND=scrapling.
 """
 
-import time
 import logging
-from typing import Optional, Literal, cast
+import random
+import time
+from typing import Literal, Optional, cast
+
+from src.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 Impersonate = Literal[
     "chrome",
@@ -38,8 +43,6 @@ def _coerce_impersonate(value: str | None) -> Optional[Impersonate]:
     return None
 
 
-from src.core.config import settings
-
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +50,6 @@ def _get_proxy() -> Optional[str]:
     """Return a proxy URL if proxy rotation is enabled, else None."""
     if not settings.SCRAPE_USE_PROXY or not settings.SCRAPE_PROXY_LIST:
         return None
-    import random
 
     return random.choice(settings.SCRAPE_PROXY_LIST)
 
