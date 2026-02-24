@@ -14,7 +14,7 @@ This repo is the data backbone — it scrapes NFL stats, owns the database schem
 ## This Repo OWNS
 - ALL database schema and Alembic migrations — other repos have READ-ONLY DB access
 - ALL SQLAlchemy entities (single source of truth)
-- ALL data scraping logic (Selenium + BeautifulSoup)
+- ALL data scraping logic (Selenium + BeautifulSoup, with optional Scrapling backend)
 - ALL data retrieval queries
 
 ## Directory Structure
@@ -70,6 +70,13 @@ pytest -m integration # Only integration tests
 - Schema managed via Alembic migrations (see `migrations/` directory)
 - 14+ tables: team_offense, team_defense, passing_stats, rushing_stats, receiving_stats, defense_stats, kicking_stats, punting_stats, return_stats, scoring_stats, games, standings, returns, kicking, punting
 - Tables.sql kept as reference only — DO NOT use for deployments
+
+## Scrape Backend
+- `SCRAPE_BACKEND` env var selects the fetch backend: `selenium` (default) or `scrapling`
+- Selenium is always the default — omitting the var preserves existing behavior
+- `scrape_service.py` (team gamelog) requires Selenium (JS interaction) — do NOT migrate it to Scrapling
+- Backend selection lives in `src/core/scraper_utils.py:fetch_page()`, fetcher impl in `src/core/scrapling_fetcher.py`
+- Rollback: set `SCRAPE_BACKEND=selenium` or remove the variable. No code change needed.
 
 ## Known Issues
 - 403 errors from Pro-Football-Reference when URL contains hash fragments (e.g., #all_team_stats)
