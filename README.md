@@ -15,7 +15,8 @@ NFL data ingestion, storage, and retrieval service for the BeatTheBooks platform
 - FastAPI
 - SQLAlchemy + Alembic
 - PostgreSQL (Neon.tech)
-- Selenium + BeautifulSoup + Pandas
+- Selenium + BeautifulSoup + Pandas (default fetch backend)
+- Scrapling (optional fetch backend)
 
 ## Quick Start
 
@@ -30,6 +31,31 @@ cp .env.example .env
 # Run the service
 uvicorn src.main:app --reload --port 8001
 ```
+
+## Scrape Backend Selection
+
+The fetch layer supports two backends, controlled by the `SCRAPE_BACKEND` env var.
+**Selenium is the default.** No change is needed to preserve existing behavior.
+
+| Value | Backend | When to use |
+|-------|---------|-------------|
+| `selenium` | Headless Chrome via Selenium | Default. Production-proven. Required for `scrape_service.py` (JS interaction). |
+| `scrapling` | Scrapling (curl-cffi or Camoufox) | Lighter weight, no browser process. Opt-in only. |
+
+```bash
+# Use Selenium (default — no change needed)
+SCRAPE_BACKEND=selenium
+
+# Switch to Scrapling
+SCRAPE_BACKEND=scrapling
+SCRAPLING_FETCHER_TYPE=fetcher      # "fetcher" (HTTP) or "stealthy" (Camoufox browser)
+SCRAPLING_TIMEOUT=30
+SCRAPLING_IMPERSONATE=chrome
+```
+
+### Rollback
+
+To revert to Selenium at any time, set `SCRAPE_BACKEND=selenium` (or remove the variable entirely). No code changes or redeployment of different code is required — the Scrapling code path is never loaded unless explicitly selected.
 
 ## API Endpoints
 
