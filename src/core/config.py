@@ -11,7 +11,6 @@ class Settings(BaseSettings):
 
     # Database (required — app won't start without it)
     DATABASE_URL: str
-    SCRAPE_BACKEND: str = "selenium"
     # Scraping — backend selection
     SCRAPE_BACKEND: Literal["selenium", "scrapling"] = "selenium"
 
