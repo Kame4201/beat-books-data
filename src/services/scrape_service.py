@@ -1,3 +1,4 @@
+import asyncio
 import time
 import base64
 import logging
@@ -8,7 +9,6 @@ from datetime import datetime
 from selenium.webdriver.common.by import By
 from src.dtos.team_game_dto import TeamGameCreate
 from src.repositories.team_game_repo import TeamGameRepository
-from src.core.database import SessionLocal
 from src.core.config import settings
 from src.core.scraper_utils import (
     strip_url_hash,
@@ -195,7 +195,8 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
     )
 
 
-async def download_team_gamelog(team: str, year: int):
+def _download_team_gamelog_sync(team: str, year: int):
+    """Blocking Selenium scrape — always runs in a thread pool."""
     url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
 
     # Strip hash fragments to avoid 403 errors
@@ -242,8 +243,17 @@ async def download_team_gamelog(team: str, year: int):
     return parse_xlsx_to_games(excel_bytes, team)
 
 
-async def scrape_and_store(team: str, year: int):
-    db = SessionLocal()
+async def download_team_gamelog(team: str, year: int):
+    """Async wrapper — offloads blocking Selenium to thread pool."""
+    return await asyncio.to_thread(_download_team_gamelog_sync, team, year)
+
+
+async def scrape_and_store(team: str, year: int, db=None):
+    from src.core.database import SessionLocal
+
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
 
     url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
 
@@ -266,4 +276,5 @@ async def scrape_and_store(team: str, year: int):
         return saved
 
     finally:
-        db.close()
+        if own_session:
+            db.close()
