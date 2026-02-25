@@ -1,6 +1,6 @@
 """Pydantic DTOs for odds data validation."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import date, datetime
 from typing import Optional
 from decimal import Decimal
@@ -43,8 +43,8 @@ class OddsCreate(BaseModel):
     is_opening: bool = Field(False, description="Whether this is the opening line")
     is_closing: bool = Field(False, description="Whether this is the closing line")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "season": 2024,
                 "week": 1,
@@ -62,6 +62,7 @@ class OddsCreate(BaseModel):
                 "is_closing": True,
             }
         }
+    )
 
 
 class OddsResponse(BaseModel):
@@ -88,8 +89,7 @@ class OddsResponse(BaseModel):
     is_opening: bool
     is_closing: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OddsQuery(BaseModel):

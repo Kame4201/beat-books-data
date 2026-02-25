@@ -2,7 +2,7 @@
 DTOs for game weather operations.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
 
@@ -61,5 +61,4 @@ class GameWeatherRead(BaseModel):
     game_time: Optional[datetime]
     fetched_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

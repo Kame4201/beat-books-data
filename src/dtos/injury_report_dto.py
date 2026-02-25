@@ -2,7 +2,7 @@
 DTOs for injury report operations.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
 from typing import Optional
 
@@ -43,5 +43,4 @@ class InjuryReportRead(BaseModel):
     injury_type: Optional[str]
     report_date: Optional[date]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
