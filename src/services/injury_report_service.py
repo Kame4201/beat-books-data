@@ -11,6 +11,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+from sqlalchemy.orm import Session
+
 from src.core.config import settings
 from src.core.database import SessionLocal
 from src.repositories.injury_report_repo import InjuryReportRepository
@@ -25,7 +27,7 @@ class InjuryReportService:
     Scrapes weekly injury designations from Pro-Football-Reference.
     """
 
-    def __init__(self, db_session: Optional[SessionLocal] = None):
+    def __init__(self, db_session: Optional["Session"] = None):
         """
         Initialize the service.
 
@@ -65,7 +67,7 @@ class InjuryReportService:
             options=options,
         )
 
-        injury_reports = []
+        injury_reports: List[InjuryReportCreate] = []
 
         try:
             # Pro-Football-Reference injury report URL format
@@ -87,10 +89,10 @@ class InjuryReportService:
 
             # Parse table rows
             tbody = injury_table.find("tbody")
-            if not tbody:
+            if not tbody or not hasattr(tbody, "find_all"):
                 return injury_reports
 
-            rows = tbody.find_all("tr")
+            rows = tbody.find_all("tr")  # type: ignore[union-attr]
 
             for row in rows:
                 # Skip header rows

@@ -17,20 +17,28 @@ class GameWeatherCreate(BaseModel):
     home_team: str = Field(
         ..., min_length=2, max_length=10, description="Home team abbreviation"
     )
-    stadium: Optional[str] = Field(None, max_length=255, description="Stadium name")
-    is_dome: bool = Field(False, description="Whether stadium is domed/indoor")
-    temperature: Optional[float] = Field(None, description="Temperature in Fahrenheit")
-    wind_speed: Optional[float] = Field(None, ge=0, description="Wind speed in mph")
+    stadium: Optional[str] = Field(
+        default=None, max_length=255, description="Stadium name"
+    )
+    is_dome: bool = Field(default=False, description="Whether stadium is domed/indoor")
+    temperature: Optional[float] = Field(
+        default=None, description="Temperature in Fahrenheit"
+    )
+    wind_speed: Optional[float] = Field(
+        default=None, ge=0, description="Wind speed in mph"
+    )
     precipitation: Optional[float] = Field(
-        None, ge=0, description="Precipitation in inches"
+        default=None, ge=0, description="Precipitation in inches"
     )
     humidity: Optional[float] = Field(
-        None, ge=0, le=100, description="Humidity percentage"
+        default=None, ge=0, le=100, description="Humidity percentage"
     )
     weather_condition: Optional[str] = Field(
-        None, max_length=100, description="Weather description"
+        default=None, max_length=100, description="Weather description"
     )
-    game_time: Optional[datetime] = Field(None, description="Scheduled game time")
+    game_time: Optional[datetime] = Field(
+        default=None, description="Scheduled game time"
+    )
     fetched_at: Optional[datetime] = Field(
         default_factory=datetime.now, description="When weather was fetched"
     )

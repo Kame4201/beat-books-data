@@ -107,7 +107,7 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
                 and_(
                     GameWeather.season == season,
                     GameWeather.week == week,
-                    ~GameWeather.is_dome,
+                    GameWeather.is_dome.is_(False),
                 )
             )
             .order_by(GameWeather.home_team)

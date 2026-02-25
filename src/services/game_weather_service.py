@@ -6,6 +6,8 @@ from typing import List, Optional, Dict
 from datetime import datetime
 import requests
 
+from sqlalchemy.orm import Session
+
 from src.core.config import settings
 from src.core.database import SessionLocal
 from src.repositories.game_weather_repo import GameWeatherRepository
@@ -57,7 +59,7 @@ class GameWeatherService:
     """
 
     def __init__(
-        self, db_session: Optional[SessionLocal] = None, api_key: Optional[str] = None
+        self, db_session: Optional["Session"] = None, api_key: Optional[str] = None
     ):
         """
         Initialize the service.
@@ -116,9 +118,9 @@ class GameWeatherService:
 
         # Use current weather endpoint (could be extended to use forecast API)
         url = "https://api.openweathermap.org/data/2.5/weather"
-        params = {
-            "lat": latitude,
-            "lon": longitude,
+        params: Dict[str, str] = {
+            "lat": str(latitude),
+            "lon": str(longitude),
             "appid": self.api_key,
             "units": "imperial",  # Fahrenheit
         }
