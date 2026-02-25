@@ -25,6 +25,7 @@ beautifulsoup4
 lxml
 aiohttp
 
+# Data processing and scraping
 pandas
 selenium
 selenium-stealth
