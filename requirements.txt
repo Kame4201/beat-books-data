@@ -8,6 +8,7 @@ fastapi[all]
 # Optional but recommended for future API features
 pydantic
 pydantic[email]
+pydantic-settings
 
 # Database (you said you're using Postgres now, MySQL later)
 sqlalchemy
@@ -29,7 +30,9 @@ selenium
 selenium-stealth
 webdriver-manager
 openpyxl
-pydantic-settings
+
+# Optional fetch backend (activated via SCRAPE_BACKEND=scrapling)
+scrapling[fetchers]
 
 # Type stubs for mypy
 types-requests
