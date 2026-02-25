@@ -13,8 +13,7 @@ import os
 # Must be set before any src imports (Settings() validates at import time).
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
-# Strip unknown env vars that may exist in .env but aren't in Settings,
-# which would cause pydantic validation errors with extra="forbid".
+# Strip unknown env vars that may exist in .env but aren't in Settings.
 for _key in list(os.environ):
     if _key.startswith("SCRAPE_BACKEND"):
         del os.environ[_key]

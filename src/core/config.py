@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # Database (required — app won't start without it)
     DATABASE_URL: str
 
+    # Scraping — backend selection
+    SCRAPE_BACKEND: Literal["selenium", "scrapling"] = "selenium"
+
     # Scraping — rate limiting
     SCRAPE_DELAY_SECONDS: int = 60
     SCRAPE_REQUEST_TIMEOUT: int = 30  # seconds
@@ -43,11 +46,19 @@ class Settings(BaseSettings):
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
     ]
 
+    # Scrapling-specific (only used when SCRAPE_BACKEND=scrapling)
+    SCRAPLING_FETCHER_TYPE: Literal["fetcher", "stealthy"] = "fetcher"
+    SCRAPLING_TIMEOUT: int = 30
+    SCRAPLING_IMPERSONATE: str = "chrome"
+
     # Proxy rotation (optional)
     SCRAPE_USE_PROXY: bool = False
     SCRAPE_PROXY_LIST: List[str] = (
         []
     )  # Format: ["http://proxy1:port", "http://proxy2:port"]
+
+    # Weather API (OpenWeatherMap)
+    OPENWEATHER_API_KEY: str = ""
 
     # Odds API (Phase 2)
     ODDS_API_KEY: str = ""
