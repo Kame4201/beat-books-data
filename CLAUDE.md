@@ -45,23 +45,32 @@ tests/             # Unit, integration, E2E tests
 - Never import from beat-books-model or beat-books-api
 
 ## Common Commands
+
 ```bash
+# Setup (first time or after dependency changes)
+uv sync
+
 # Run the data service
-uvicorn src.main:app --reload --port 8001
+uv run uvicorn src.main:app --reload --port 8001
 
 # Database migrations (Alembic)
-alembic upgrade head                                    # Apply all pending migrations
-alembic revision --autogenerate -m "description"        # Create new migration (auto-detect changes)
-alembic revision -m "description"                       # Create empty migration (manual)
-alembic downgrade -1                                    # Roll back one migration
-alembic current                                         # Show current revision
-alembic history                                         # Show migration history
+uv run alembic upgrade head                                    # Apply all pending migrations
+uv run alembic revision --autogenerate -m "description"        # Create new migration (auto-detect changes)
+uv run alembic revision -m "description"                       # Create empty migration (manual)
+uv run alembic downgrade -1                                    # Roll back one migration
+uv run alembic current                                         # Show current revision
+uv run alembic history                                         # Show migration history
 
 # Testing
-pytest
-pytest --cov=src --cov-report=html
-pytest -m unit        # Only unit tests
-pytest -m integration # Only integration tests
+uv run pytest
+uv run pytest --cov=src --cov-report=html
+uv run pytest -m unit        # Only unit tests
+uv run pytest -m integration # Only integration tests
+
+# Linting & Type Checking
+uv run ruff check src tests    # Run linter
+uv run ruff format src tests   # Format code
+uv run mypy src                # Type check
 ```
 
 ## Database

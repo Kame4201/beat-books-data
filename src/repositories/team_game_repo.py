@@ -1,52 +1,57 @@
-# repositories/team_game_repo.py
+"""Repository for team game log operations.
+
+Extends BaseRepository with specialized queries for game lookups,
+season/week filtering, and upsert (create-or-skip) logic.
+"""
+
+from __future__ import annotations
+
 from typing import Optional
+
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+
 from src.entities.team_game import TeamGame
 from src.dtos.team_game_dto import TeamGameCreate
+from src.repositories.base_repo import BaseRepository
 
 
-class TeamGameRepository:
+class TeamGameRepository(BaseRepository[TeamGame]):
+    def __init__(self, session: Session) -> None:
+        super().__init__(session=session, model=TeamGame)
 
-    @staticmethod
-    def get_by_unique_key(db: Session, team_abbr: str, season: int, week: int):
-        return (
-            db.query(TeamGame)
-            .filter(
-                TeamGame.team_abbr == team_abbr,
-                TeamGame.season == season,
-                TeamGame.week == week,
-            )
-            .first()
+    def find_by_unique_key(
+        self, team_abbr: str, season: int, week: int
+    ) -> Optional[TeamGame]:
+        """Find a game by its unique (team_abbr, season, week) key."""
+        stmt = select(TeamGame).where(
+            TeamGame.team_abbr == team_abbr,
+            TeamGame.season == season,
+            TeamGame.week == week,
         )
+        return self.session.execute(stmt).scalar_one_or_none()
 
-    @staticmethod
-    def create(db: Session, obj: TeamGameCreate):
-        db_obj = TeamGame(**obj.dict())
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+    def create_from_dto(self, dto: TeamGameCreate, *, commit: bool = True) -> TeamGame:
+        """Create a TeamGame entity from a DTO."""
+        entity = TeamGame(**dto.model_dump())
+        return self.create(entity, commit=commit)
 
-    @staticmethod
-    def create_or_skip(db: Session, obj: TeamGameCreate):
-        existing = TeamGameRepository.get_by_unique_key(
-            db, obj.team_abbr, obj.season, obj.week
-        )
+    def create_or_skip(self, dto: TeamGameCreate) -> TeamGame:
+        """Insert a game record, or return the existing one if duplicate."""
+        existing = self.find_by_unique_key(dto.team_abbr, dto.season, dto.week)
         if existing:
-            return existing  # Skip duplicate
-        return TeamGameRepository.create(db, obj)
+            return existing
+        return self.create_from_dto(dto)
 
-    @staticmethod
     def find_by_season_and_week(
-        db: Session,
+        self,
         season: int,
         week: Optional[int] = None,
         *,
         limit: int = 50,
         offset: int = 0,
         sort_by: str = "week",
-        order: str = "asc"
+        order: str = "asc",
     ) -> list[TeamGame]:
         """Find games for a season, optionally filtered by week."""
         stmt = select(TeamGame).where(TeamGame.season == season)
@@ -54,7 +59,6 @@ class TeamGameRepository:
         if week is not None:
             stmt = stmt.where(TeamGame.week == week)
 
-        # Apply sorting
         sort_column = getattr(TeamGame, sort_by, None)
         if sort_column is not None:
             if order.lower() == "asc":
@@ -63,13 +67,10 @@ class TeamGameRepository:
                 stmt = stmt.order_by(sort_column.desc())
 
         stmt = stmt.limit(limit).offset(offset)
-        return list(db.execute(stmt).scalars().all())
+        return list(self.session.execute(stmt).scalars().all())
 
-    @staticmethod
-    def count_by_season(db: Session, season: int, week: Optional[int] = None) -> int:
+    def count_by_season(self, season: int, week: Optional[int] = None) -> int:
         """Count total games for a season and optional week."""
-        from sqlalchemy import func
-
         stmt = (
             select(func.count()).select_from(TeamGame).where(TeamGame.season == season)
         )
@@ -77,4 +78,4 @@ class TeamGameRepository:
         if week is not None:
             stmt = stmt.where(TeamGame.week == week)
 
-        return db.execute(stmt).scalar() or 0
+        return self.session.execute(stmt).scalar() or 0

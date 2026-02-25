@@ -14,27 +14,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: >-
-            ${{ runner.os }}-pip-mypy-${{
-            hashFiles('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-mypy-
-            ${{ runner.os }}-pip-
-
-      - name: Install mypy and dependencies
-        run: |
-          pip install -r requirements.txt mypy \
-            types-requests types-beautifulsoup4
+      - name: Install dependencies
+        run: uv sync --all-extras
 
       - name: Run mypy
         run: |
-          mypy src/ --ignore-missing-imports
+          uv run mypy src/ --ignore-missing-imports
