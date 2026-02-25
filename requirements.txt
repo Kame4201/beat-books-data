@@ -28,6 +28,12 @@ selenium-stealth
 webdriver-manager
 openpyxl
 
+# Optional fetch backend (activated via SCRAPE_BACKEND=scrapling)
+scrapling[fetchers]
+
 # Type stubs for mypy
 types-requests
 types-beautifulsoup4
+
+# Testing
+pytest-asyncio

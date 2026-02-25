@@ -11,6 +11,8 @@ class Settings(BaseSettings):
 
     # Database (required — app won't start without it)
     DATABASE_URL: str
+    # Scraping — backend selection
+    SCRAPE_BACKEND: Literal["selenium", "scrapling"] = "selenium"
 
     # Scraping — rate limiting
     SCRAPE_DELAY_SECONDS: int = 60
@@ -42,6 +44,11 @@ class Settings(BaseSettings):
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.15",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
     ]
+
+    # Scrapling-specific (only used when SCRAPE_BACKEND=scrapling)
+    SCRAPLING_FETCHER_TYPE: Literal["fetcher", "stealthy"] = "fetcher"
+    SCRAPLING_TIMEOUT: int = 30
+    SCRAPLING_IMPERSONATE: str = "chrome"
 
     # Proxy rotation (optional)
     SCRAPE_USE_PROXY: bool = False
