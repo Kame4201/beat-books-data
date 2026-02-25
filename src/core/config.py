@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         return self.ENV == "main"
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()  # type: ignore[call-arg]  # populated by env/.env at runtime

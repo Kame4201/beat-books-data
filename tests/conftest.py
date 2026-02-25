@@ -9,9 +9,15 @@ Provides:
 
 import os
 
-# Set DATABASE_URL before any src imports so Settings() validation doesn't
-# fail during test collection in CI (where no .env file exists).
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+# Force sqlite for tests so we never accidentally hit a real database.
+# Must be set before any src imports (Settings() validates at import time).
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+
+# Strip unknown env vars that may exist in .env but aren't in Settings,
+# which would cause pydantic validation errors with extra="forbid".
+for _key in list(os.environ):
+    if _key.startswith("SCRAPE_BACKEND"):
+        del os.environ[_key]
 
 import pytest
 from decimal import Decimal
