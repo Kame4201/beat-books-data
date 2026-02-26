@@ -133,9 +133,9 @@ class TestScrapeAndStoreTeamOffense:
     """Tests for scrape_and_store_team_offense end-to-end with mocks."""
 
     @pytest.mark.asyncio
-    @patch("src.services.team_offense_service.SessionLocal")
+    @patch("src.core.database.SessionLocal")
     @patch("src.services.team_offense_service.get_dataframe")
-    def test_calls_repo_create_for_each_record(self, mock_get_df, mock_session_local):
+    async def test_calls_repo_create_for_each_record(self, mock_get_df, mock_session_local):
         """Should call repo.create for each parsed record."""
         mock_get_df.return_value = [
             {
@@ -203,38 +203,34 @@ class TestScrapeAndStoreTeamOffense:
         mock_session = MagicMock()
         mock_session_local.return_value = mock_session
 
-        result = asyncio.get_event_loop().run_until_complete(
-            scrape_and_store_team_offense(2023)
-        )
+        result = await scrape_and_store_team_offense(2023)
 
         assert mock_session.commit.called
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    @patch("src.services.team_offense_service.SessionLocal")
+    @patch("src.core.database.SessionLocal")
     @patch("src.services.team_offense_service.get_dataframe")
-    def test_session_closed_on_success(self, mock_get_df, mock_session_local):
+    async def test_session_closed_on_success(self, mock_get_df, mock_session_local):
         """Session should be closed after successful scrape."""
         mock_get_df.return_value = []
         mock_session = MagicMock()
         mock_session_local.return_value = mock_session
 
-        asyncio.get_event_loop().run_until_complete(scrape_and_store_team_offense(2023))
+        await scrape_and_store_team_offense(2023)
 
         assert mock_session.close.called
 
     @pytest.mark.asyncio
-    @patch("src.services.team_offense_service.SessionLocal")
+    @patch("src.core.database.SessionLocal")
     @patch("src.services.team_offense_service.get_dataframe")
-    def test_session_closed_on_failure(self, mock_get_df, mock_session_local):
+    async def test_session_closed_on_failure(self, mock_get_df, mock_session_local):
         """Session should be closed even when scraping fails."""
         mock_get_df.side_effect = Exception("Network error")
         mock_session = MagicMock()
         mock_session_local.return_value = mock_session
 
         with pytest.raises(Exception, match="Network error"):
-            asyncio.get_event_loop().run_until_complete(
-                scrape_and_store_team_offense(2023)
-            )
+            await scrape_and_store_team_offense(2023)
 
         assert mock_session.close.called
