@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     ODDS_API_KEY: str = ""
     ODDS_API_BASE_URL: str = "https://api.the-odds-api.com"
 
+    # API security
+    API_KEY: str = ""  # Set to enable X-API-Key auth; empty = auth disabled
+    RATE_LIMIT: str = "10/minute"  # slowapi-style rate limit string
+
     # App
     ENV: Literal["local", "dev", "stage", "main"] = "local"
     DEBUG: bool = False

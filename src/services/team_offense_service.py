@@ -1,9 +1,9 @@
+import asyncio
 import logging
 
 from bs4 import Tag
 from sqlalchemy.orm import Session
 
-from src.core.database import SessionLocal
 from src.core.scraper_utils import (
     clean_value,
     fetch_page_with_selenium,
@@ -85,14 +85,15 @@ def get_dataframe(season: int) -> list[dict]:
     return rows
 
 
-async def scrape_and_store_team_offense(season: int):
-    db: Session = SessionLocal()
+async def scrape_and_store_team_offense(season: int, db: Session | None = None):
+    from src.core.database import SessionLocal
+
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
 
     try:
-        logger.info("Fetching team offense data for season %d", season)
-        parsed = get_dataframe(season)
-        logger.info("Parsed %d team offense records for season %d", len(parsed), season)
-
+        parsed = await asyncio.to_thread(get_dataframe, season)
         repo = TeamOffenseRepository(db)
 
         saved = []
@@ -103,19 +104,8 @@ async def scrape_and_store_team_offense(season: int):
             saved.append(saved_obj)
 
         db.commit()
-
-        logger.info(
-            "Successfully saved %d team offense records for season %d",
-            len(saved),
-            season,
-        )
         return saved
 
-    except Exception:
-        logger.error(
-            "Failed to scrape team offense for season %d", season, exc_info=True
-        )
-        raise
-
     finally:
-        db.close()
+        if own_session:
+            db.close()
