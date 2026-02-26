@@ -18,21 +18,13 @@ git clone https://github.com/<org>/beat-books-data.git
 cd beat-books-data
 ```
 
-### 2. Create a virtual environment
+### 2. Install dependencies
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-# or
-venv\Scripts\activate     # Windows
+uv sync
 ```
 
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-pip install pytest pytest-asyncio pytest-cov  # dev/test deps
-```
+`uv` manages the virtual environment automatically — no manual `venv` step needed.
 
 ### 4. Configure environment variables
 
@@ -66,7 +58,7 @@ API_PORT=8001
 ## Running the App Locally
 
 ```bash
-uvicorn src.main:app --reload --port 8001
+uv run uvicorn src.main:app --reload --port 8001
 ```
 
 The API will be available at `http://localhost:8001`. Visit `http://localhost:8001/docs` for the interactive Swagger UI.
@@ -85,19 +77,19 @@ The API will be available at `http://localhost:8001`. Visit `http://localhost:80
 ### All tests
 
 ```bash
-pytest
+uv run pytest
 ```
 
 ### Unit tests only
 
 ```bash
-pytest tests/test_unit/ -v
+uv run pytest tests/test_unit/ -v
 ```
 
 ### With coverage report
 
 ```bash
-pytest --cov=src --cov-report=html
+uv run pytest --cov=src --cov-report=html
 # Open htmlcov/index.html in a browser to view the report
 ```
 
@@ -105,13 +97,13 @@ pytest --cov=src --cov-report=html
 
 ```bash
 # Service tests
-pytest tests/test_unit/test_services/test_team_offense_service.py -v
+uv run pytest tests/test_unit/test_services/test_team_offense_service.py -v
 
 # Repository tests
-pytest tests/test_unit/test_repositories/test_base_repo.py -v
+uv run pytest tests/test_unit/test_repositories/test_base_repo.py -v
 
 # DTO validation tests
-pytest tests/test_unit/test_dtos.py -v
+uv run pytest tests/test_unit/test_dtos.py -v
 ```
 
 ### Test architecture
@@ -127,37 +119,37 @@ All schema changes MUST go through Alembic migrations. Never run raw `ALTER TABL
 ### Check current migration status
 
 ```bash
-alembic current
+uv run alembic current
 ```
 
 ### Apply all pending migrations
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 ### Create a new migration (auto-detect changes from entities)
 
 ```bash
-alembic revision --autogenerate -m "add column foo to team_offense"
+uv run alembic revision --autogenerate -m "add column foo to team_offense"
 ```
 
 ### Create an empty migration (for manual SQL)
 
 ```bash
-alembic revision -m "backfill historical data"
+uv run alembic revision -m "backfill historical data"
 ```
 
 ### Roll back one migration
 
 ```bash
-alembic downgrade -1
+uv run alembic downgrade -1
 ```
 
 ### View migration history
 
 ```bash
-alembic history
+uv run alembic history
 ```
 
 ### Important notes
@@ -266,8 +258,8 @@ async def scrape_my_new_stats(year: int):
 ### 6. Generate the Migration
 
 ```bash
-alembic revision --autogenerate -m "add my_new_stats table"
-alembic upgrade head
+uv run alembic revision --autogenerate -m "add my_new_stats table"
+uv run alembic upgrade head
 ```
 
 ### 7. Add Tests
@@ -328,5 +320,5 @@ The `SCRAPE_DELAY_SECONDS` setting controls the delay between requests. The defa
 The `webdriver-manager` package auto-downloads the correct ChromeDriver version. If you encounter issues, try:
 
 ```bash
-pip install --upgrade webdriver-manager
+uv add --upgrade webdriver-manager
 ```
