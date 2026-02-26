@@ -75,12 +75,12 @@ def parse_xlsx_to_games(excel_bytes: bytes, team: str):
     tables = pd.read_html(StringIO(html_str))
 
     df = tables[0]  # first table is schedule
-    print(df.head())
+    logger.debug("DataFrame head:\n%s", df.head())
     # Flatten MultiIndex columns
     if isinstance(df.columns, pd.MultiIndex):
         df = flatten_pfr_columns(df)
 
-    print("CLEANED COLUMNS:", df.columns)
+    logger.debug("Cleaned columns: %s", df.columns.tolist())
 
     games = []
     for _, row in df.iterrows():
@@ -129,7 +129,7 @@ def extract_excel_bytes_from_dlink(driver):
         raise Exception("dlink href did not populate — PFR JS may not have executed.")
 
     header, b64data = href.split(",", 1)
-    print("DLINK HEADER:", header)
+    logger.debug("DLINK header: %s", header)
     excel_bytes = base64.b64decode(b64data)
 
     return excel_bytes
@@ -233,9 +233,7 @@ def _download_team_gamelog_sync(team: str, year: int):
 
     # Extract Excel bytes from injected <a id="dlink">
     excel_bytes = extract_excel_bytes_from_dlink(driver)
-    print("=== FIRST 200 BYTES ===")
-    print(excel_bytes[:200])
-    print("=======================")
+    logger.debug("First 200 bytes of Excel data: %s", excel_bytes[:200])
 
     driver.quit()
 

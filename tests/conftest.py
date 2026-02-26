@@ -12,11 +12,14 @@ import os
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 import pytest
+from decimal import Decimal
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from src.entities.base import Base
+from src.entities.team_offense import TeamOffense
+from src.entities.passing_stats import PassingStats
 
 # Import ALL entity modules so Base.metadata.create_all() registers them.
 import src.entities.team_offense  # noqa: F401

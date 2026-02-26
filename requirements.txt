@@ -8,11 +8,16 @@ fastapi[all]
 # Optional but recommended for future API features
 pydantic
 pydantic[email]
+pydantic-settings
 
 # Database (you said you're using Postgres now, MySQL later)
 sqlalchemy
 psycopg2-binary
 alembic
+
+# JWT auth
+python-jose[cryptography]
+passlib[bcrypt]
 
 # If scraping code uses aiohttp or requests, include these:
 requests
@@ -25,8 +30,13 @@ selenium
 selenium-stealth
 webdriver-manager
 openpyxl
-pydantic-settings
+
+# Optional fetch backend (activated via SCRAPE_BACKEND=scrapling)
+scrapling[fetchers]
 
 # Type stubs for mypy
 types-requests
 types-beautifulsoup4
+
+# Testing
+pytest-asyncio

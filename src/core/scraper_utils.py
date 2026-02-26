@@ -181,6 +181,34 @@ def fetch_page_with_selenium(url: str) -> str:
         driver.quit()
 
 
+def fetch_page(url: str) -> str:
+    """
+    Unified page fetcher — delegates to the backend selected by SCRAPE_BACKEND.
+
+    Returns raw HTML string regardless of backend. Downstream parsing
+    (find_pfr_table, BeautifulSoup, COLUMN_MAP) is completely unaffected.
+
+    Args:
+        url: URL to fetch
+
+    Returns:
+        Page source HTML string
+    """
+    backend = settings.SCRAPE_BACKEND
+
+    if backend == "scrapling":
+        from src.core.scrapling_fetcher import fetch_page_with_scrapling
+
+        return fetch_page_with_scrapling(url)
+
+    if backend == "selenium":
+        return fetch_page_with_selenium(url)
+
+    raise ValueError(
+        f"Unknown SCRAPE_BACKEND: {backend!r}. Use 'selenium' or 'scrapling'."
+    )
+
+
 def find_pfr_table(page_source: str, table_id: str) -> Optional[Tag]:
     """
     Find a table by ID in PFR HTML, checking visible DOM first then HTML comments.
