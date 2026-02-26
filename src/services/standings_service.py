@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.standings_dto import StandingsCreate
 from src.entities.standings import Standings
 from src.repositories.standings_repo import StandingsRepository
-from src.dtos.standings_dto import StandingsCreate
 
 logger = logging.getLogger(__name__)
 

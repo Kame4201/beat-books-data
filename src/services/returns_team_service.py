@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.returns_dto import TeamReturnsCreate
 from src.entities.returns import TeamReturns
 from src.repositories.returns_repo import ReturnsRepository
-from src.dtos.returns_dto import TeamReturnsCreate
 
 logger = logging.getLogger(__name__)
 

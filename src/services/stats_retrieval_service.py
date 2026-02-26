@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Optional
 from sqlalchemy.orm import Session
 
-from src.repositories.team_offense_repo import TeamOffenseRepository
 from src.repositories.passing_stats_repo import PassingStatsRepository
-from src.repositories.rushing_stats_repo import RushingStatsRepository
 from src.repositories.receiving_stats_repo import ReceivingStatsRepository
+from src.repositories.rushing_stats_repo import RushingStatsRepository
 from src.repositories.standings_repo import StandingsRepository
 from src.repositories.team_game_repo import TeamGameRepository
+from src.repositories.team_offense_repo import TeamOffenseRepository
 
 
 class StatsRetrievalService:
@@ -58,7 +57,7 @@ class StatsRetrievalService:
 
         return {"data": teams, "total": total, "offset": offset, "limit": limit}
 
-    def get_team_stats(self, team: str, season: int) -> Optional[dict]:
+    def get_team_stats(self, team: str, season: int) -> dict | None:
         """
         Get stats for a specific team in a given season.
 
@@ -173,7 +172,7 @@ class StatsRetrievalService:
     def get_games(
         self,
         season: int,
-        week: Optional[int] = None,
+        week: int | None = None,
         *,
         offset: int = 0,
         limit: int = 50,
@@ -219,8 +218,8 @@ class StatsRetrievalService:
     def search_players(
         self,
         query: str,
-        season: Optional[int] = None,
-        position: Optional[str] = None,
+        season: int | None = None,
+        position: str | None = None,
         *,
         offset: int = 0,
         limit: int = 50,

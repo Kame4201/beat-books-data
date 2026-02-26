@@ -6,9 +6,8 @@ This tracks the status and progress of batch scraping operations.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
-from sqlalchemy import Integer, String, DateTime, JSON
+from sqlalchemy import JSON, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.entities.base import Base
@@ -33,11 +32,11 @@ class ScrapeJob(Base):
     processed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     failed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    errors: Mapped[Optional[list]] = mapped_column(
+    errors: Mapped[list | None] = mapped_column(
         JSON, nullable=True
     )  # Store error details as JSON
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

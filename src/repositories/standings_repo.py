@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.entities.standings import Standings
 from src.repositories.base_repo import BaseRepository

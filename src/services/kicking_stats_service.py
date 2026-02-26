@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.kicking_stats_dto import KickingStatsCreate
 from src.entities.kicking_stats import KickingStats
 from src.repositories.kicking_stats_repo import KickingStatsRepository
-from src.dtos.kicking_stats_dto import KickingStatsCreate
 
 logger = logging.getLogger(__name__)
 

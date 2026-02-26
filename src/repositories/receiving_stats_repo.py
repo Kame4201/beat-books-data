@@ -1,8 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import Optional
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.entities.receiving_stats import ReceivingStats
 from src.repositories.base_repo import BaseRepository
@@ -15,8 +14,8 @@ class ReceivingStatsRepository(BaseRepository[ReceivingStats]):
     def search_players(
         self,
         query: str,
-        season: Optional[int] = None,
-        position: Optional[str] = None,
+        season: int | None = None,
+        position: str | None = None,
         *,
         limit: int = 50,
         offset: int = 0,

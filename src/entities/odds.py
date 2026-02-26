@@ -1,15 +1,16 @@
 """SQLAlchemy entity for odds data."""
 
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Date,
-    Numeric,
     Boolean,
+    Column,
+    Date,
     DateTime,
+    Integer,
+    Numeric,
+    String,
     UniqueConstraint,
 )
+
 from src.entities.base import Base
 
 

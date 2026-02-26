@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.passing_stats_dto import PassingStatsCreate
 from src.entities.passing_stats import PassingStats
 from src.repositories.passing_stats_repo import PassingStatsRepository
-from src.dtos.passing_stats_dto import PassingStatsCreate
 
 logger = logging.getLogger(__name__)
 

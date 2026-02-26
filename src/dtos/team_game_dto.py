@@ -1,8 +1,8 @@
 """DTO for team game log operations."""
 
-from pydantic import BaseModel
 from datetime import date
-from typing import Optional
+
+from pydantic import BaseModel
 
 
 class TeamGameCreate(BaseModel):
@@ -10,16 +10,16 @@ class TeamGameCreate(BaseModel):
     season: int
     week: int
 
-    day: Optional[str] = None
-    game_date: Optional[date] = None
-    game_time: Optional[str] = None
+    day: str | None = None
+    game_date: date | None = None
+    game_time: str | None = None
 
-    winner: Optional[str] = None
-    loser: Optional[str] = None
+    winner: str | None = None
+    loser: str | None = None
 
-    pts_w: Optional[int] = None
-    pts_l: Optional[int] = None
-    yds_w: Optional[int] = None
-    to_w: Optional[int] = None
-    yds_l: Optional[int] = None
-    to_l: Optional[int] = None
+    pts_w: int | None = None
+    pts_l: int | None = None
+    yds_w: int | None = None
+    to_w: int | None = None
+    yds_l: int | None = None
+    to_l: int | None = None

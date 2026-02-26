@@ -2,9 +2,9 @@
 DTOs for injury report operations.
 """
 
-from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
-from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class InjuryReportCreate(BaseModel):
@@ -18,16 +18,14 @@ class InjuryReportCreate(BaseModel):
         ..., min_length=1, max_length=255, description="Player full name"
     )
     team: str = Field(..., min_length=2, max_length=10, description="Team abbreviation")
-    position: Optional[str] = Field(
+    position: str | None = Field(
         None, max_length=10, description="Player position (QB, RB, etc.)"
     )
     designation: str = Field(
         ..., description="Injury designation (Questionable/Doubtful/Out/IR)"
     )
-    injury_type: Optional[str] = Field(
-        None, max_length=100, description="Type of injury"
-    )
-    report_date: Optional[date] = Field(None, description="Date of injury report")
+    injury_type: str | None = Field(None, max_length=100, description="Type of injury")
+    report_date: date | None = Field(None, description="Date of injury report")
 
 
 class InjuryReportRead(BaseModel):
@@ -38,9 +36,9 @@ class InjuryReportRead(BaseModel):
     week: int
     player_name: str
     team: str
-    position: Optional[str]
+    position: str | None
     designation: str
-    injury_type: Optional[str]
-    report_date: Optional[date]
+    injury_type: str | None
+    report_date: date | None
 
     model_config = ConfigDict(from_attributes=True)

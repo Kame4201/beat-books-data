@@ -1,21 +1,23 @@
 """
-Utility functions for web scraping with retry logic, user-agent rotation, and error handling.
+Utility functions for web scraping with retry logic,
+user-agent rotation, and error handling.
 """
 
-import time
-import random
 import logging
-from typing import Callable, Any, Optional, List
+import random
+import time
+from collections.abc import Callable
+from typing import Any
+from urllib.parse import urlparse, urlunparse
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from bs4 import BeautifulSoup, Comment, Tag
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth  # noqa: F401
-from urllib.parse import urlparse, urlunparse
+from webdriver_manager.chrome import ChromeDriverManager
 
 from src.core.config import settings
 
@@ -59,7 +61,7 @@ def get_random_user_agent() -> str:
     return random.choice(settings.SCRAPE_USER_AGENTS)
 
 
-def get_random_proxy() -> Optional[str]:
+def get_random_proxy() -> str | None:
     """
     Return a random proxy from the configured pool if proxy rotation is enabled.
 
@@ -209,7 +211,7 @@ def fetch_page(url: str) -> str:
     )
 
 
-def find_pfr_table(page_source: str, table_id: str) -> Optional[Tag]:
+def find_pfr_table(page_source: str, table_id: str) -> Tag | None:
     """
     Find a table by ID in PFR HTML, checking visible DOM first then HTML comments.
 
@@ -245,21 +247,24 @@ def find_pfr_table(page_source: str, table_id: str) -> Optional[Tag]:
 def retry_with_backoff(
     func: Callable,
     *args,
-    max_retries: Optional[int] = None,
-    retry_delays: Optional[List[int]] = None,
-    url: Optional[str] = None,
+    max_retries: int | None = None,
+    retry_delays: list[int] | None = None,
+    url: str | None = None,
     **kwargs,
 ) -> Any:
     """
     Execute a function with exponential backoff retry logic.
 
-    Logs structured data for each attempt including URL, status, duration, and success/failure.
+    Logs structured data for each attempt including URL,
+    status, duration, and success/failure.
 
     Args:
         func: Function to execute
         *args: Positional arguments for func
-        max_retries: Maximum number of retry attempts (defaults to settings.SCRAPE_MAX_RETRIES)
-        retry_delays: List of delays in seconds between retries (defaults to settings.SCRAPE_RETRY_DELAYS)
+        max_retries: Max retry attempts
+            (defaults to settings.SCRAPE_MAX_RETRIES)
+        retry_delays: Delays in seconds between retries
+            (defaults to settings.SCRAPE_RETRY_DELAYS)
         url: URL being scraped (for logging purposes)
         **kwargs: Keyword arguments for func
 
@@ -324,7 +329,8 @@ def retry_with_backoff(
 
             # If this wasn't the last attempt, wait before retrying
             if attempt < max_retries - 1:
-                # Use configured delay if available, otherwise use default exponential backoff
+                # Use configured delay if available,
+                # otherwise default exponential backoff
                 if attempt < len(retry_delays):
                     delay = retry_delays[attempt]
                 else:

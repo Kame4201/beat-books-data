@@ -1,20 +1,22 @@
 import asyncio
-import time
 import base64
 import logging
-import pandas as pd
-import numpy as np
-from io import StringIO
+import time
 from datetime import datetime
+from io import StringIO
+
+import numpy as np
+import pandas as pd
 from selenium.webdriver.common.by import By
-from src.dtos.team_game_dto import TeamGameCreate
-from src.repositories.team_game_repo import TeamGameRepository
+
 from src.core.config import settings
 from src.core.scraper_utils import (
-    strip_url_hash,
     create_chrome_driver,
     retry_with_backoff,
+    strip_url_hash,
 )
+from src.dtos.team_game_dto import TeamGameCreate
+from src.repositories.team_game_repo import TeamGameRepository
 
 logger = logging.getLogger(__name__)
 

@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.punting_dto import PuntingCreate
 from src.entities.punting import Punting
 from src.repositories.punting_repo import PuntingRepository
-from src.dtos.punting_dto import PuntingCreate
 
 logger = logging.getLogger(__name__)
 

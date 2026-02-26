@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.entities.games import Games
 from src.repositories.base_repo import BaseRepository

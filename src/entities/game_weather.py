@@ -4,8 +4,10 @@ Entity for tracking game weather conditions.
 
 from __future__ import annotations
 
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
+
 from src.entities.base import Base
 
 

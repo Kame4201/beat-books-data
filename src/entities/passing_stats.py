@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Optional
 
-from sqlalchemy import Integer, String, Numeric, UniqueConstraint
+from sqlalchemy import Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
@@ -18,39 +17,39 @@ class PassingStats(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    season: Mapped[Optional[int]] = mapped_column(Integer)
+    season: Mapped[int | None] = mapped_column(Integer)
 
-    rk: Mapped[Optional[int]] = mapped_column(Integer)
-    player_name: Mapped[Optional[str]] = mapped_column(String(128))
-    age: Mapped[Optional[int]] = mapped_column(Integer)
-    tm: Mapped[Optional[str]] = mapped_column(String(64))
-    pos: Mapped[Optional[str]] = mapped_column(String(16))
+    rk: Mapped[int | None] = mapped_column(Integer)
+    player_name: Mapped[str | None] = mapped_column(String(128))
+    age: Mapped[int | None] = mapped_column(Integer)
+    tm: Mapped[str | None] = mapped_column(String(64))
+    pos: Mapped[str | None] = mapped_column(String(16))
 
-    g: Mapped[Optional[int]] = mapped_column(Integer)
-    gs: Mapped[Optional[int]] = mapped_column(Integer)
-    qb_rec: Mapped[Optional[str]] = mapped_column(String(16))
+    g: Mapped[int | None] = mapped_column(Integer)
+    gs: Mapped[int | None] = mapped_column(Integer)
+    qb_rec: Mapped[str | None] = mapped_column(String(16))
 
-    cmp: Mapped[Optional[int]] = mapped_column(Integer)
-    att: Mapped[Optional[int]] = mapped_column(Integer)
-    cmp_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    yds: Mapped[Optional[int]] = mapped_column(Integer)
-    td: Mapped[Optional[int]] = mapped_column(Integer)
-    td_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    ints: Mapped[Optional[int]] = mapped_column(Integer)
-    int_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    first_downs: Mapped[Optional[int]] = mapped_column(Integer)
-    succ_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    lng: Mapped[Optional[int]] = mapped_column(Integer)
-    ypa: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    ay_pa: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    ypc: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    ypg: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2))
-    rate: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2))
-    qbr: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2))
-    sk: Mapped[Optional[int]] = mapped_column(Integer)
-    yds_sack: Mapped[Optional[int]] = mapped_column(Integer)
-    sk_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 3))
-    ny_pa: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2))
-    any_pa: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2))
-    four_qc: Mapped[Optional[int]] = mapped_column(Integer)
-    gwd: Mapped[Optional[int]] = mapped_column(Integer)
+    cmp: Mapped[int | None] = mapped_column(Integer)
+    att: Mapped[int | None] = mapped_column(Integer)
+    cmp_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    yds: Mapped[int | None] = mapped_column(Integer)
+    td: Mapped[int | None] = mapped_column(Integer)
+    td_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    ints: Mapped[int | None] = mapped_column(Integer)
+    int_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    first_downs: Mapped[int | None] = mapped_column(Integer)
+    succ_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    lng: Mapped[int | None] = mapped_column(Integer)
+    ypa: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    ay_pa: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    ypc: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    ypg: Mapped[Decimal | None] = mapped_column(Numeric(6, 2))
+    rate: Mapped[Decimal | None] = mapped_column(Numeric(6, 2))
+    qbr: Mapped[Decimal | None] = mapped_column(Numeric(6, 2))
+    sk: Mapped[int | None] = mapped_column(Integer)
+    yds_sack: Mapped[int | None] = mapped_column(Integer)
+    sk_pct: Mapped[Decimal | None] = mapped_column(Numeric(6, 3))
+    ny_pa: Mapped[Decimal | None] = mapped_column(Numeric(6, 2))
+    any_pa: Mapped[Decimal | None] = mapped_column(Numeric(6, 2))
+    four_qc: Mapped[int | None] = mapped_column(Integer)
+    gwd: Mapped[int | None] = mapped_column(Integer)

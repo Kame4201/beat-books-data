@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Optional
 
-from sqlalchemy import Integer, String, Numeric, UniqueConstraint
+from sqlalchemy import Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
@@ -16,33 +15,33 @@ class TeamDefense(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    season: Mapped[Optional[int]] = mapped_column(Integer)
+    season: Mapped[int | None] = mapped_column(Integer)
 
-    rk: Mapped[Optional[int]] = mapped_column(Integer)
-    tm: Mapped[Optional[str]] = mapped_column(String(64))
-    g: Mapped[Optional[int]] = mapped_column(Integer)
-    pa: Mapped[Optional[int]] = mapped_column(Integer)
-    yds: Mapped[Optional[int]] = mapped_column(Integer)
-    ply: Mapped[Optional[int]] = mapped_column(Integer)
-    ypp: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    turnovers: Mapped[Optional[int]] = mapped_column(Integer)
-    fl: Mapped[Optional[int]] = mapped_column(Integer)
-    firstd_total: Mapped[Optional[int]] = mapped_column(Integer)
-    cmp: Mapped[Optional[int]] = mapped_column(Integer)
-    att_pass: Mapped[Optional[int]] = mapped_column(Integer)
-    yds_pass: Mapped[Optional[int]] = mapped_column(Integer)
-    td_pass: Mapped[Optional[int]] = mapped_column(Integer)
-    ints: Mapped[Optional[int]] = mapped_column(Integer)
-    nypa: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    firstd_pass: Mapped[Optional[int]] = mapped_column(Integer)
-    att_rush: Mapped[Optional[int]] = mapped_column(Integer)
-    yds_rush: Mapped[Optional[int]] = mapped_column(Integer)
-    td_rush: Mapped[Optional[int]] = mapped_column(Integer)
-    ypa: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    firstd_rush: Mapped[Optional[int]] = mapped_column(Integer)
-    pen: Mapped[Optional[int]] = mapped_column(Integer)
-    yds_pen: Mapped[Optional[int]] = mapped_column(Integer)
-    firstpy: Mapped[Optional[int]] = mapped_column(Integer)
-    sc_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    to_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    depa: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 2))
+    rk: Mapped[int | None] = mapped_column(Integer)
+    tm: Mapped[str | None] = mapped_column(String(64))
+    g: Mapped[int | None] = mapped_column(Integer)
+    pa: Mapped[int | None] = mapped_column(Integer)
+    yds: Mapped[int | None] = mapped_column(Integer)
+    ply: Mapped[int | None] = mapped_column(Integer)
+    ypp: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    turnovers: Mapped[int | None] = mapped_column(Integer)
+    fl: Mapped[int | None] = mapped_column(Integer)
+    firstd_total: Mapped[int | None] = mapped_column(Integer)
+    cmp: Mapped[int | None] = mapped_column(Integer)
+    att_pass: Mapped[int | None] = mapped_column(Integer)
+    yds_pass: Mapped[int | None] = mapped_column(Integer)
+    td_pass: Mapped[int | None] = mapped_column(Integer)
+    ints: Mapped[int | None] = mapped_column(Integer)
+    nypa: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    firstd_pass: Mapped[int | None] = mapped_column(Integer)
+    att_rush: Mapped[int | None] = mapped_column(Integer)
+    yds_rush: Mapped[int | None] = mapped_column(Integer)
+    td_rush: Mapped[int | None] = mapped_column(Integer)
+    ypa: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    firstd_rush: Mapped[int | None] = mapped_column(Integer)
+    pen: Mapped[int | None] = mapped_column(Integer)
+    yds_pen: Mapped[int | None] = mapped_column(Integer)
+    firstpy: Mapped[int | None] = mapped_column(Integer)
+    sc_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    to_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    depa: Mapped[Decimal | None] = mapped_column(Numeric(8, 2))

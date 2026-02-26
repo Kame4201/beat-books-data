@@ -19,8 +19,8 @@ Job lifecycle:  pending -> running -> complete
 from __future__ import annotations
 
 import asyncio
-from typing import Any, List, Dict, Optional
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -45,7 +45,7 @@ class BatchScrapeService:
         self.session = session
         self.job_repo = ScrapeJobRepository(session)
 
-    async def create_batch_job(self, targets: List[Dict[str, Any]]) -> int:
+    async def create_batch_job(self, targets: list[dict[str, Any]]) -> int:
         """
         Create a new batch scrape job.
 
@@ -72,8 +72,8 @@ class BatchScrapeService:
         return job.id
 
     async def execute_batch_job(
-        self, job_id: int, targets: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, job_id: int, targets: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Execute a batch scrape job.
 
@@ -100,7 +100,7 @@ class BatchScrapeService:
 
         succeeded = 0
         failed_count = 0
-        errors: List[Dict[str, Any]] = []
+        errors: list[dict[str, Any]] = []
 
         # Process each target sequentially
         for idx, target in enumerate(targets):
@@ -145,7 +145,7 @@ class BatchScrapeService:
             "errors": errors,
         }
 
-    async def run_batch_scrape(self, targets: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def run_batch_scrape(self, targets: list[dict[str, Any]]) -> dict[str, Any]:
         """
         Convenience method to create and execute a batch scrape in one call.
 
@@ -159,7 +159,7 @@ class BatchScrapeService:
         job_id = await self.create_batch_job(targets)
         return await self.execute_batch_job(job_id, targets)
 
-    def get_job_status(self, job_id: int) -> Optional[Dict[str, Any]]:
+    def get_job_status(self, job_id: int) -> dict[str, Any] | None:
         """
         Get the current status of a batch scrape job.
 
@@ -185,8 +185,8 @@ class BatchScrapeService:
         }
 
     def list_jobs(
-        self, status: Optional[str] = None, limit: int = 100
-    ) -> List[Dict[str, Any]]:
+        self, status: str | None = None, limit: int = 100
+    ) -> list[dict[str, Any]]:
         """
         List batch scrape jobs, optionally filtered by status.
 
@@ -219,7 +219,7 @@ class BatchScrapeService:
 
 
 # Convenience function for standalone use
-async def batch_scrape(targets: List[Dict[str, Any]]) -> Dict[str, Any]:
+async def batch_scrape(targets: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Convenience function to run a batch scrape with a new session.
 

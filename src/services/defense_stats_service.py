@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.defense_stats_dto import DefenseStatsCreate
 from src.entities.defense_stats import DefenseStats
 from src.repositories.defense_stats_repo import DefenseStatsRepository
-from src.dtos.defense_stats_dto import DefenseStatsCreate
 
 logger = logging.getLogger(__name__)
 

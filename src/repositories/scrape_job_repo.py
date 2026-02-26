@@ -15,9 +15,8 @@ avoid lost-update race conditions.
 
 from __future__ import annotations
 
-from typing import Optional, List
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from src.entities.scrape_job import ScrapeJob
@@ -52,7 +51,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
 
     def update_job_status(
         self, job_id: int, status: str, commit: bool = True
-    ) -> Optional[ScrapeJob]:
+    ) -> ScrapeJob | None:
         """
         Update the status of a job.
 
@@ -70,9 +69,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
             return self.update(job, commit=commit)
         return None
 
-    def increment_processed(
-        self, job_id: int, commit: bool = True
-    ) -> Optional[ScrapeJob]:
+    def increment_processed(self, job_id: int, commit: bool = True) -> ScrapeJob | None:
         """
         Increment the processed count for a job.
 
@@ -91,7 +88,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
 
     def increment_failed(
         self, job_id: int, error_info: dict, commit: bool = True
-    ) -> Optional[ScrapeJob]:
+    ) -> ScrapeJob | None:
         """
         Increment the failed count and add error information.
 
@@ -118,7 +115,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
             return self.update(job, commit=commit)
         return None
 
-    def mark_complete(self, job_id: int, commit: bool = True) -> Optional[ScrapeJob]:
+    def mark_complete(self, job_id: int, commit: bool = True) -> ScrapeJob | None:
         """
         Mark a job as complete and set completion timestamp.
 
@@ -138,7 +135,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
             return self.update(job, commit=commit)
         return None
 
-    def get_jobs_by_status(self, status: str, limit: int = 100) -> List[ScrapeJob]:
+    def get_jobs_by_status(self, status: str, limit: int = 100) -> list[ScrapeJob]:
         """
         Get all jobs with a specific status.
 
@@ -152,7 +149,7 @@ class ScrapeJobRepository(BaseRepository[ScrapeJob]):
         stmt = select(ScrapeJob).where(ScrapeJob.status == status).limit(limit)
         return list(self.session.execute(stmt).scalars().all())
 
-    def get_all_jobs(self, limit: int = 100) -> List[ScrapeJob]:
+    def get_all_jobs(self, limit: int = 100) -> list[ScrapeJob]:
         """
         Get all scrape jobs.
 

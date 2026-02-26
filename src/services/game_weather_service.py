@@ -2,20 +2,20 @@
 Service for fetching and managing game weather data.
 """
 
-from typing import List, Optional, Dict
 from datetime import datetime
-import requests
+from typing import Optional
 
+import requests
 from sqlalchemy.orm import Session
 
 from src.core.config import settings
 from src.core.database import SessionLocal
-from src.repositories.game_weather_repo import GameWeatherRepository
 from src.dtos.game_weather_dto import GameWeatherCreate
 from src.entities.game_weather import GameWeather
+from src.repositories.game_weather_repo import GameWeatherRepository
 
 # Stadium information: team -> (stadium_name, is_dome, latitude, longitude)
-STADIUM_INFO: Dict[str, tuple] = {
+STADIUM_INFO: dict[str, tuple] = {
     "ARI": ("State Farm Stadium", True, 33.5276, -112.2626),
     "ATL": ("Mercedes-Benz Stadium", True, 33.7553, -84.4009),
     "BAL": ("M&T Bank Stadium", False, 39.2780, -76.6227),
@@ -59,7 +59,7 @@ class GameWeatherService:
     """
 
     def __init__(
-        self, db_session: Optional["Session"] = None, api_key: Optional[str] = None
+        self, db_session: Optional["Session"] = None, api_key: str | None = None
     ):
         """
         Initialize the service.
@@ -84,7 +84,7 @@ class GameWeatherService:
         if self.db:
             self.db.close()
 
-    def get_stadium_info(self, team: str) -> Optional[tuple]:
+    def get_stadium_info(self, team: str) -> tuple | None:
         """
         Get stadium information for a team.
 
@@ -97,7 +97,7 @@ class GameWeatherService:
         return STADIUM_INFO.get(team.upper())
 
     def fetch_weather_from_api(
-        self, latitude: float, longitude: float, game_time: Optional[datetime] = None
+        self, latitude: float, longitude: float, game_time: datetime | None = None
     ) -> dict:
         """
         Fetch weather data from OpenWeatherMap API.
@@ -118,7 +118,7 @@ class GameWeatherService:
 
         # Use current weather endpoint (could be extended to use forecast API)
         url = "https://api.openweathermap.org/data/2.5/weather"
-        params: Dict[str, str] = {
+        params: dict[str, str] = {
             "lat": str(latitude),
             "lon": str(longitude),
             "appid": self.api_key,
@@ -152,8 +152,8 @@ class GameWeatherService:
         season: int,
         week: int,
         home_team: str,
-        game_time: Optional[datetime] = None,
-    ) -> Optional[GameWeather]:
+        game_time: datetime | None = None,
+    ) -> GameWeather | None:
         """
         Fetch weather data for a game and store it in the database.
 
@@ -221,8 +221,8 @@ class GameWeatherService:
             return self.repo.upsert_game_weather(dto)
 
     def fetch_week_weather(
-        self, season: int, week: int, home_teams: List[str]
-    ) -> List[GameWeather]:
+        self, season: int, week: int, home_teams: list[str]
+    ) -> list[GameWeather]:
         """
         Fetch weather data for multiple games in a week.
 
@@ -246,7 +246,7 @@ class GameWeatherService:
 
         return results
 
-    def get_week_weather(self, season: int, week: int) -> List[GameWeather]:
+    def get_week_weather(self, season: int, week: int) -> list[GameWeather]:
         """
         Get all weather data for a specific week.
 
@@ -259,7 +259,7 @@ class GameWeatherService:
         """
         return self.repo.get_by_week(season, week)
 
-    def get_outdoor_games_weather(self, season: int, week: int) -> List[GameWeather]:
+    def get_outdoor_games_weather(self, season: int, week: int) -> list[GameWeather]:
         """
         Get weather data for outdoor stadium games only.
 

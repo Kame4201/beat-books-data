@@ -4,13 +4,12 @@ Repository for game weather data access.
 
 from __future__ import annotations
 
-from typing import List, Optional
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
 
+from src.dtos.game_weather_dto import GameWeatherCreate
 from src.entities.game_weather import GameWeather
 from src.repositories.base_repo import BaseRepository
-from src.dtos.game_weather_dto import GameWeatherCreate
 
 
 class GameWeatherRepository(BaseRepository[GameWeather]):
@@ -49,7 +48,7 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
         )
         return self.create(entity, commit=True)
 
-    def get_by_week(self, season: int, week: int) -> List[GameWeather]:
+    def get_by_week(self, season: int, week: int) -> list[GameWeather]:
         """
         Get all game weather records for a specific season and week.
 
@@ -67,9 +66,7 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
         )
         return list(self.session.execute(stmt).scalars().all())
 
-    def get_by_game(
-        self, season: int, week: int, home_team: str
-    ) -> Optional[GameWeather]:
+    def get_by_game(self, season: int, week: int, home_team: str) -> GameWeather | None:
         """
         Get weather data for a specific game.
 
@@ -90,7 +87,7 @@ class GameWeatherRepository(BaseRepository[GameWeather]):
         )
         return self.session.execute(stmt).scalar_one_or_none()
 
-    def get_outdoor_games(self, season: int, week: int) -> List[GameWeather]:
+    def get_outdoor_games(self, season: int, week: int) -> list[GameWeather]:
         """
         Get weather data for outdoor stadium games only.
 

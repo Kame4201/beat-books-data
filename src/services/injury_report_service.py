@@ -3,21 +3,21 @@ Service for scraping and managing injury reports.
 """
 
 import time
-from typing import List, Optional
 from datetime import date
+from typing import Optional
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
 from sqlalchemy.orm import Session
+from webdriver_manager.chrome import ChromeDriverManager
 
 from src.core.config import settings
 from src.core.database import SessionLocal
-from src.repositories.injury_report_repo import InjuryReportRepository
 from src.dtos.injury_report_dto import InjuryReportCreate
 from src.entities.injury_report import InjuryReport
+from src.repositories.injury_report_repo import InjuryReportRepository
 
 
 class InjuryReportService:
@@ -46,7 +46,7 @@ class InjuryReportService:
 
     def scrape_weekly_injuries_pfr(
         self, season: int, week: int
-    ) -> List[InjuryReportCreate]:
+    ) -> list[InjuryReportCreate]:
         """
         Scrape injury reports for a specific week from Pro-Football-Reference.
 
@@ -67,7 +67,7 @@ class InjuryReportService:
             options=options,
         )
 
-        injury_reports: List[InjuryReportCreate] = []
+        injury_reports: list[InjuryReportCreate] = []
 
         try:
             # Pro-Football-Reference injury report URL format
@@ -142,7 +142,7 @@ class InjuryReportService:
 
         return injury_reports
 
-    def scrape_and_store(self, season: int, week: int) -> List[InjuryReport]:
+    def scrape_and_store(self, season: int, week: int) -> list[InjuryReport]:
         """
         Scrape injury reports and store them in the database.
 
@@ -169,7 +169,7 @@ class InjuryReportService:
         print(f"Stored {len(created_reports)} injury reports for {season} week {week}")
         return created_reports
 
-    def get_week_injuries(self, season: int, week: int) -> List[InjuryReport]:
+    def get_week_injuries(self, season: int, week: int) -> list[InjuryReport]:
         """
         Get all injury reports for a specific week.
 
@@ -184,7 +184,7 @@ class InjuryReportService:
 
     def get_team_injuries(
         self, season: int, week: int, team: str
-    ) -> List[InjuryReport]:
+    ) -> list[InjuryReport]:
         """
         Get injury reports for a specific team and week.
 

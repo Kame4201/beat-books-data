@@ -4,7 +4,8 @@ Entity for tracking weekly injury reports.
 
 from __future__ import annotations
 
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Date, Integer, String
+
 from src.entities.base import Base
 
 

@@ -1,19 +1,19 @@
 """Repository for odds data access."""
 
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from typing import Optional, List
 from datetime import datetime
 
-from src.entities.odds import Odds
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
 from src.dtos.odds_dto import OddsCreate
+from src.entities.odds import Odds
 
 
 class OddsRepository:
     """Data access layer for odds data. ALL SQL lives here."""
 
     @staticmethod
-    def get_by_id(db: Session, odds_id: int) -> Optional[Odds]:
+    def get_by_id(db: Session, odds_id: int) -> Odds | None:
         """Retrieve a single odds record by ID."""
         return db.query(Odds).filter(Odds.id == odds_id).first()
 
@@ -25,7 +25,7 @@ class OddsRepository:
         home_team: str,
         sportsbook: str,
         timestamp: datetime,
-    ) -> Optional[Odds]:
+    ) -> Odds | None:
         """Get odds by unique constraint fields."""
         return (
             db.query(Odds)
@@ -62,8 +62,8 @@ class OddsRepository:
 
     @staticmethod
     def get_closing_lines(
-        db: Session, season: int, week: int, sportsbook: Optional[str] = None
-    ) -> List[Odds]:
+        db: Session, season: int, week: int, sportsbook: str | None = None
+    ) -> list[Odds]:
         """Get all closing lines for a specific week."""
         query = db.query(Odds).filter(
             and_(Odds.season == season, Odds.week == week, Odds.is_closing.is_(True))
@@ -74,8 +74,8 @@ class OddsRepository:
 
     @staticmethod
     def get_opening_lines(
-        db: Session, season: int, week: int, sportsbook: Optional[str] = None
-    ) -> List[Odds]:
+        db: Session, season: int, week: int, sportsbook: str | None = None
+    ) -> list[Odds]:
         """Get all opening lines for a specific week."""
         query = db.query(Odds).filter(
             and_(Odds.season == season, Odds.week == week, Odds.is_opening.is_(True))
@@ -87,7 +87,7 @@ class OddsRepository:
     @staticmethod
     def get_line_movement(
         db: Session, season: int, week: int, home_team: str, sportsbook: str
-    ) -> List[Odds]:
+    ) -> list[Odds]:
         """Get all line movements for a specific game/sportsbook."""
         return (
             db.query(Odds)
@@ -107,10 +107,10 @@ class OddsRepository:
     def get_by_team(
         db: Session,
         team: str,
-        season: Optional[int] = None,
-        week: Optional[int] = None,
-        is_closing: Optional[bool] = None,
-    ) -> List[Odds]:
+        season: int | None = None,
+        week: int | None = None,
+        is_closing: bool | None = None,
+    ) -> list[Odds]:
         """Get all odds records for a specific team."""
         query = db.query(Odds).filter(
             (Odds.home_team == team) | (Odds.away_team == team)
@@ -126,7 +126,7 @@ class OddsRepository:
         return query.order_by(Odds.game_date, Odds.timestamp).all()
 
     @staticmethod
-    def bulk_create(db: Session, odds_list: List[OddsCreate]) -> List[Odds]:
+    def bulk_create(db: Session, odds_list: list[OddsCreate]) -> list[Odds]:
         """Bulk insert odds records."""
         db_objs = [Odds(**obj.model_dump()) for obj in odds_list]
         db.add_all(db_objs)

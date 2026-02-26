@@ -10,9 +10,9 @@ from src.core.scraper_utils import (
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.games_dto import GamesCreate
 from src.entities.games import Games
 from src.repositories.games_repo import GamesRepository
-from src.dtos.games_dto import GamesCreate
 
 logger = logging.getLogger(__name__)
 

@@ -4,13 +4,12 @@ Repository for injury report data access.
 
 from __future__ import annotations
 
-from typing import List
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
 
+from src.dtos.injury_report_dto import InjuryReportCreate
 from src.entities.injury_report import InjuryReport
 from src.repositories.base_repo import BaseRepository
-from src.dtos.injury_report_dto import InjuryReportCreate
 
 
 class InjuryReportRepository(BaseRepository[InjuryReport]):
@@ -45,7 +44,7 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         )
         return self.create(entity, commit=True)
 
-    def get_by_week(self, season: int, week: int) -> List[InjuryReport]:
+    def get_by_week(self, season: int, week: int) -> list[InjuryReport]:
         """
         Get all injury reports for a specific season and week.
 
@@ -63,7 +62,7 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         )
         return list(self.session.execute(stmt).scalars().all())
 
-    def get_by_team(self, season: int, week: int, team: str) -> List[InjuryReport]:
+    def get_by_team(self, season: int, week: int, team: str) -> list[InjuryReport]:
         """
         Get injury reports for a specific team, season, and week.
 
@@ -88,7 +87,7 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         )
         return list(self.session.execute(stmt).scalars().all())
 
-    def get_by_player(self, season: int, player_name: str) -> List[InjuryReport]:
+    def get_by_player(self, season: int, player_name: str) -> list[InjuryReport]:
         """
         Get all injury reports for a specific player in a season.
 
@@ -130,8 +129,8 @@ class InjuryReportRepository(BaseRepository[InjuryReport]):
         return count
 
     def upsert_week_reports(
-        self, season: int, week: int, dtos: List[InjuryReportCreate]
-    ) -> List[InjuryReport]:
+        self, season: int, week: int, dtos: list[InjuryReportCreate]
+    ) -> list[InjuryReport]:
         """
         Delete existing reports for a week and insert new ones (idempotent upsert).
 

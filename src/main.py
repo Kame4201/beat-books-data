@@ -1,7 +1,6 @@
-import uuid
 import logging
-from enum import Enum
-from typing import Optional
+import uuid
+from enum import StrEnum
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.responses import JSONResponse
@@ -12,22 +11,22 @@ from sqlalchemy.orm import Session
 from src.core.config import settings
 from src.core.database import get_db
 from src.services import (
-    scrape_service,
-    team_offense_service,
-    team_defense_service,
-    standings_service,
-    games_service,
-    kicking_team_service,
-    punting_team_service,
-    returns_team_service,
-    passing_stats_service,
-    rushing_stats_service,
-    receiving_stats_service,
     defense_stats_service,
+    games_service,
     kicking_stats_service,
+    kicking_team_service,
+    passing_stats_service,
     punting_stats_service,
+    punting_team_service,
+    receiving_stats_service,
     return_stats_service,
+    returns_team_service,
+    rushing_stats_service,
     scoring_stats_service,
+    scrape_service,
+    standings_service,
+    team_defense_service,
+    team_offense_service,
 )
 from src.services.stats_retrieval_service import StatsRetrievalService
 
@@ -106,7 +105,7 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 async def verify_api_key(
-    api_key: Optional[str] = Security(api_key_header),
+    api_key: str | None = Security(api_key_header),
 ):
     """Require X-API-Key header when API_KEY is configured."""
     if not settings.API_KEY:
@@ -135,7 +134,7 @@ async def read_root():
 # ---------------------------------------------------------------------------
 
 
-class StatType(str, Enum):
+class StatType(StrEnum):
     team_offense = "team_offense"
     team_defense = "team_defense"
     standings = "standings"
@@ -212,7 +211,9 @@ async def get_teams(
     db: Session = Depends(get_db),
 ):
     svc = StatsRetrievalService(db)
-    return svc.get_all_teams(season, offset=offset, limit=limit, sort_by=sort_by, order=order)
+    return svc.get_all_teams(
+        season, offset=offset, limit=limit, sort_by=sort_by, order=order
+    )
 
 
 @app.get("/api/v1/stats/teams/{season}/{team}")
@@ -248,13 +249,15 @@ async def get_standings(
     db: Session = Depends(get_db),
 ):
     svc = StatsRetrievalService(db)
-    return svc.get_standings(season, offset=offset, limit=limit, sort_by=sort_by, order=order)
+    return svc.get_standings(
+        season, offset=offset, limit=limit, sort_by=sort_by, order=order
+    )
 
 
 @app.get("/api/v1/games/{season}")
 async def get_games(
     season: int,
-    week: Optional[int] = None,
+    week: int | None = None,
     offset: int = 0,
     limit: int = 50,
     sort_by: str = "week",
@@ -262,13 +265,15 @@ async def get_games(
     db: Session = Depends(get_db),
 ):
     svc = StatsRetrievalService(db)
-    return svc.get_games(season, week=week, offset=offset, limit=limit, sort_by=sort_by, order=order)
+    return svc.get_games(
+        season, week=week, offset=offset, limit=limit, sort_by=sort_by, order=order
+    )
 
 
 @app.get("/api/v1/players/search")
 async def search_players(
     name: str,
-    season: Optional[int] = None,
+    season: int | None = None,
     offset: int = 0,
     limit: int = 50,
     db: Session = Depends(get_db),

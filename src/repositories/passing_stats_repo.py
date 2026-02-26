@@ -1,8 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import Optional
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.entities.passing_stats import PassingStats
 from src.repositories.base_repo import BaseRepository
@@ -15,7 +14,7 @@ class PassingStatsRepository(BaseRepository[PassingStats]):
     def find_by_player(
         self,
         player_name: str,
-        season: Optional[int] = None,
+        season: int | None = None,
         *,
         limit: int = 50,
         offset: int = 0,
@@ -34,7 +33,7 @@ class PassingStatsRepository(BaseRepository[PassingStats]):
     def find_by_season_and_position(
         self,
         season: int,
-        position: Optional[str] = None,
+        position: str | None = None,
         *,
         limit: int = 50,
         offset: int = 0,
@@ -61,7 +60,7 @@ class PassingStatsRepository(BaseRepository[PassingStats]):
     def search_players(
         self,
         query: str,
-        season: Optional[int] = None,
+        season: int | None = None,
         *,
         limit: int = 50,
         offset: int = 0,
@@ -75,7 +74,7 @@ class PassingStatsRepository(BaseRepository[PassingStats]):
         stmt = stmt.order_by(self.model.player_name.asc()).limit(limit).offset(offset)
         return list(self.session.execute(stmt).scalars().all())
 
-    def count_by_season(self, season: int, position: Optional[str] = None) -> int:
+    def count_by_season(self, season: int, position: str | None = None) -> int:
         """Count total passing stats entries for a season and optional position."""
         from sqlalchemy import func
 

@@ -1,8 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import Optional
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.entities.team_offense import TeamOffense
 from src.repositories.base_repo import BaseRepository
@@ -21,7 +20,7 @@ class TeamOffenseRepository(BaseRepository[TeamOffense]):
         sort_by: str = "pf",
         order: str = "desc",
     ) -> list[TeamOffense]:
-        """Find all team offense stats for a given season with pagination and sorting."""
+        """Find team offense stats for a season."""
         stmt = select(self.model).where(self.model.season == season)
 
         # Apply sorting
@@ -35,7 +34,7 @@ class TeamOffenseRepository(BaseRepository[TeamOffense]):
         stmt = stmt.limit(limit).offset(offset)
         return list(self.session.execute(stmt).scalars().all())
 
-    def find_by_team_and_season(self, team: str, season: int) -> Optional[TeamOffense]:
+    def find_by_team_and_season(self, team: str, season: int) -> TeamOffense | None:
         """Find team offense stats for a specific team and season."""
         stmt = select(self.model).where(
             self.model.tm == team, self.model.season == season
