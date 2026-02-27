@@ -29,6 +29,7 @@ dependencies = [
     "selenium-stealth",
     "webdriver-manager",
     "openpyxl",
+    "scrapling",
 ]
 
 [project.optional-dependencies]
