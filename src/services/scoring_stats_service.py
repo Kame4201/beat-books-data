@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.core.scraper_utils import (
     clean_value,
-    fetch_page_with_selenium,
+    fetch_page,
     find_pfr_table,
     retry_with_backoff,
 )
@@ -49,7 +49,7 @@ COLUMN_MAP = {
 
 def get_dataframe(season: int) -> list[dict]:
     url = PFR_URL_TEMPLATE.format(season=season)
-    page_source = retry_with_backoff(fetch_page_with_selenium, url, url=url)
+    page_source = retry_with_backoff(fetch_page, url, url=url)
     table = find_pfr_table(page_source, PFR_TABLE_ID)
 
     if table is None:
