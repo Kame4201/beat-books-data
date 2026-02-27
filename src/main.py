@@ -5,7 +5,7 @@ from enum import StrEnum
 from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.orm import Session
 
 from src.core.config import settings
@@ -194,6 +194,44 @@ async def scrape_stat(
         raise HTTPException(status_code=400, detail=f"Unknown stat type: {stat_type}")
     data = await scrape_fn(season, db=db)
     return data
+
+
+# ---------------------------------------------------------------------------
+# Batch scrape endpoint
+# ---------------------------------------------------------------------------
+
+
+class BatchScrapeRequest(BaseModel):
+    stats: list[StatType] = list(StatType)
+    dry_run: bool = False
+
+
+@app.post("/scrape/batch/{season}")
+async def batch_scrape(
+    season: int,
+    body: BatchScrapeRequest,
+    db: Session = Depends(get_db),
+    _: None = Depends(verify_api_key),
+):
+    """Run multiple scrape jobs for a season sequentially."""
+    results: list[dict] = []
+    for stat_type in body.stats:
+        if body.dry_run:
+            results.append({"stat": stat_type.value, "status": "skipped (dry_run)"})
+            continue
+        scrape_fn = SCRAPE_DISPATCH.get(stat_type)
+        if scrape_fn is None:
+            results.append({"stat": stat_type.value, "status": "unknown"})
+            continue
+        try:
+            await scrape_fn(season, db=db)
+            results.append({"stat": stat_type.value, "status": "success"})
+        except Exception as exc:
+            logger.exception("Batch scrape failed for %s/%s", stat_type, season)
+            results.append(
+                {"stat": stat_type.value, "status": "error", "error": str(exc)}
+            )
+    return {"season": season, "results": results}
 
 
 # ---------------------------------------------------------------------------
