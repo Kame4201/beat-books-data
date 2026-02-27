@@ -1,7 +1,7 @@
 """create injury_reports table
 
 Revision ID: 003
-Revises: 001
+Revises: 002
 Create Date: 2026-02-16 00:00:00.000000
 
 Adds the injury_reports table to track weekly NFL injury designations
@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "003"
-down_revision: Union[str, None] = "001"
+down_revision: Union[str, None] = "002"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
