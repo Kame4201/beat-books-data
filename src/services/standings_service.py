@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.core.scraper_utils import (
     clean_value,
-    fetch_page_with_selenium,
+    fetch_page,
     find_pfr_table,
     retry_with_backoff,
 )
@@ -68,7 +68,7 @@ def _parse_table(table: Tag, season: int) -> list[dict]:
 
 def get_dataframe(season: int) -> list[dict]:
     url = PFR_URL_TEMPLATE.format(season=season)
-    page_source = retry_with_backoff(fetch_page_with_selenium, url, url=url)
+    page_source = retry_with_backoff(fetch_page, url, url=url)
 
     all_rows = []
     for table_id in PFR_TABLE_IDS:

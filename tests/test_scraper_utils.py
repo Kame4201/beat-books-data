@@ -242,6 +242,44 @@ class TestRetryWithBackoff:
         assert mock_func.call_count == 2
 
 
+class TestFetchPageDispatch:
+    """Tests for fetch_page backend dispatch."""
+
+    def test_fetch_page_dispatches_to_scrapling(self):
+        """When SCRAPE_BACKEND=scrapling, fetch_page calls scrapling fetcher."""
+        with patch.object(settings, "SCRAPE_BACKEND", "scrapling"):
+            with patch(
+                "src.core.scrapling_fetcher.fetch_page_with_scrapling",
+                return_value="<html>scrapling</html>",
+            ) as mock_scrapling:
+                from src.core.scraper_utils import fetch_page
+
+                result = fetch_page("http://example.com")
+                mock_scrapling.assert_called_once_with("http://example.com")
+                assert result == "<html>scrapling</html>"
+
+    def test_fetch_page_dispatches_to_selenium(self):
+        """When SCRAPE_BACKEND=selenium, fetch_page calls selenium fetcher."""
+        with patch.object(settings, "SCRAPE_BACKEND", "selenium"):
+            with patch(
+                "src.core.scraper_utils.fetch_page_with_selenium",
+                return_value="<html>selenium</html>",
+            ) as mock_selenium:
+                from src.core.scraper_utils import fetch_page
+
+                result = fetch_page("http://example.com")
+                mock_selenium.assert_called_once_with("http://example.com")
+                assert result == "<html>selenium</html>"
+
+    def test_fetch_page_raises_on_unknown_backend(self):
+        """When SCRAPE_BACKEND is invalid, fetch_page raises ValueError."""
+        with patch.object(settings, "SCRAPE_BACKEND", "unknown"):
+            from src.core.scraper_utils import fetch_page
+
+            with pytest.raises(ValueError, match="Unknown SCRAPE_BACKEND"):
+                fetch_page("http://example.com")
+
+
 class TestConfigurationSettings:
     """Tests for scraping configuration settings."""
 
