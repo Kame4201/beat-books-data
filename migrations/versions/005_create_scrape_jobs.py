@@ -17,10 +17,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-# down_revision is None for now; will be chained to the correct
-# predecessor during rebase when other migration PRs are merged.
 revision = '005'
-down_revision = None
+down_revision = '004'
 branch_labels = None
 depends_on = None
 

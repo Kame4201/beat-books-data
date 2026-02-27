@@ -44,8 +44,10 @@ class Settings(BaseSettings):
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",  # noqa: E501
     ]
 
-    # Scrape backend selection
+    # Scraping — backend selection
     SCRAPE_BACKEND: Literal["selenium", "scrapling"] = "scrapling"
+
+    # Scrapling-specific settings
     SCRAPLING_FETCHER_TYPE: Literal["fetcher", "stealthy"] = "stealthy"
     SCRAPLING_TIMEOUT: int = 30
     SCRAPLING_IMPERSONATE: str = "chrome"
