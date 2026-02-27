@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
+from src.repositories.games_repo import GamesRepository
 from src.repositories.passing_stats_repo import PassingStatsRepository
 from src.repositories.receiving_stats_repo import ReceivingStatsRepository
 from src.repositories.rushing_stats_repo import RushingStatsRepository
 from src.repositories.standings_repo import StandingsRepository
-from src.repositories.team_game_repo import TeamGameRepository
 from src.repositories.team_offense_repo import TeamOffenseRepository
 
 
@@ -22,7 +22,7 @@ class StatsRetrievalService:
         self.rushing_stats_repo = RushingStatsRepository(session)
         self.receiving_stats_repo = ReceivingStatsRepository(session)
         self.standings_repo = StandingsRepository(session)
-        self.team_game_repo = TeamGameRepository(session)
+        self.games_repo = GamesRepository(session)
 
     def get_all_teams(
         self,
@@ -196,7 +196,7 @@ class StatsRetrievalService:
         # Enforce max limit
         limit = min(limit, 200)
 
-        games = self.team_game_repo.find_by_season_and_week(
+        games = self.games_repo.find_by_season(
             season=season,
             week=week,
             limit=limit,
@@ -205,7 +205,7 @@ class StatsRetrievalService:
             order=order,
         )
 
-        total = self.team_game_repo.count_by_season(season, week)
+        total = self.games_repo.count_by_season(season, week)
 
         return {
             "data": games,
