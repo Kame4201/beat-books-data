@@ -1,25 +1,22 @@
-import time
+import asyncio
 import base64
 import logging
-import pandas as pd
-import numpy as np
-from io import StringIO
+import time
 from datetime import datetime
-from selenium import webdriver
+from io import StringIO
+
+import numpy as np
+import pandas as pd
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from src.dtos.team_game_dto import TeamGameCreate
-from src.repositories.team_game_repo import TeamGameRepository
-from src.core.database import SessionLocal
+
 from src.core.config import settings
 from src.core.scraper_utils import (
-    strip_url_hash,
-    get_random_user_agent,
-    get_random_proxy,
+    create_chrome_driver,
     retry_with_backoff,
+    strip_url_hash,
 )
+from src.dtos.team_game_dto import TeamGameCreate
+from src.repositories.team_game_repo import TeamGameRepository
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +77,12 @@ def parse_xlsx_to_games(excel_bytes: bytes, team: str):
     tables = pd.read_html(StringIO(html_str))
 
     df = tables[0]  # first table is schedule
-    print(df.head())
+    logger.debug("DataFrame head:\n%s", df.head())
     # Flatten MultiIndex columns
     if isinstance(df.columns, pd.MultiIndex):
         df = flatten_pfr_columns(df)
 
-    print("CLEANED COLUMNS:", df.columns)
+    logger.debug("Cleaned columns: %s", df.columns.tolist())
 
     games = []
     for _, row in df.iterrows():
@@ -134,7 +131,7 @@ def extract_excel_bytes_from_dlink(driver):
         raise Exception("dlink href did not populate — PFR JS may not have executed.")
 
     header, b64data = href.split(",", 1)
-    print("DLINK HEADER:", header)
+    logger.debug("DLINK header: %s", header)
     excel_bytes = base64.b64decode(b64data)
 
     return excel_bytes
@@ -200,7 +197,8 @@ def map_scraped_to_model(scraped: dict, season: int) -> TeamGameCreate:
     )
 
 
-async def download_team_gamelog(team: str, year: int):
+def _download_team_gamelog_sync(team: str, year: int):
+    """Blocking Selenium scrape — always runs in a thread pool."""
     url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
 
     # Strip hash fragments to avoid 403 errors
@@ -209,57 +207,35 @@ async def download_team_gamelog(team: str, year: int):
         logger.info(f"Stripped hash fragment from URL: {url} -> {clean_url}")
         url = clean_url
 
-    options = Options()
-    options.add_argument("--headless=new")
-
-    # Set random user-agent from pool
-    user_agent = get_random_user_agent()
-    options.add_argument(f"user-agent={user_agent}")
-    logger.debug(f"Using user-agent: {user_agent[:50]}...")
-
-    # Configure proxy if enabled
-    proxy = get_random_proxy()
-    if proxy:
-        options.add_argument(f"--proxy-server={proxy}")
-        logger.debug(f"Using proxy: {proxy}")
-
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options,
-    )
-
-    # Set page load timeout
-    driver.set_page_load_timeout(settings.SCRAPE_REQUEST_TIMEOUT)
+    driver = create_chrome_driver(headless=True)
 
     driver.get(url)
-    time.sleep(1)
+    time.sleep(settings.SCRAPE_PAGE_LOAD_WAIT)
 
     # Scroll to the Schedule section
     section = driver.find_element(
         By.XPATH, "//h2[contains(text(), 'Schedule')]/parent::div"
     )
     driver.execute_script("arguments[0].scrollIntoView(true);", section)
-    time.sleep(1)
+    time.sleep(settings.SCRAPE_PAGE_LOAD_WAIT)
 
     # Click "Share & more"
     share = section.find_element(
         By.XPATH, ".//li[contains(@class, 'hasmore')]/span[contains(text(),'Share')]"
     )
     share.click()
-    time.sleep(0.4)
+    time.sleep(settings.SCRAPE_CLICK_DELAY)
 
     # Click "Get as Excel Workbook"
     excel_btn = section.find_element(
         By.XPATH, ".//button[contains(text(),'Get as Excel Workbook')]"
     )
     excel_btn.click()
-    time.sleep(1)
+    time.sleep(settings.SCRAPE_PAGE_LOAD_WAIT)
 
     # Extract Excel bytes from injected <a id="dlink">
     excel_bytes = extract_excel_bytes_from_dlink(driver)
-    print("=== FIRST 200 BYTES ===")
-    print(excel_bytes[:200])
-    print("=======================")
+    logger.debug("First 200 bytes of Excel data: %s", excel_bytes[:200])
 
     driver.quit()
 
@@ -267,8 +243,17 @@ async def download_team_gamelog(team: str, year: int):
     return parse_xlsx_to_games(excel_bytes, team)
 
 
-async def scrape_and_store(team: str, year: int):
-    db = SessionLocal()
+async def download_team_gamelog(team: str, year: int):
+    """Async wrapper — offloads blocking Selenium to thread pool."""
+    return await asyncio.to_thread(_download_team_gamelog_sync, team, year)
+
+
+async def scrape_and_store(team: str, year: int, db=None):
+    from src.core.database import SessionLocal
+
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
 
     url = f"https://www.pro-football-reference.com/teams/{team.lower()}/{year}.htm"
 
@@ -277,11 +262,12 @@ async def scrape_and_store(team: str, year: int):
         scraped_games = await retry_with_backoff(
             download_team_gamelog, team, year, url=url
         )
+        repo = TeamGameRepository(db)
         saved = []
 
         for game in scraped_games:
             model_obj = map_scraped_to_model(game, year)
-            saved_obj = TeamGameRepository.create_or_skip(db, model_obj)
+            saved_obj = repo.create_or_skip(model_obj)
             saved.append(saved_obj)
 
         logger.info(
@@ -290,4 +276,5 @@ async def scrape_and_store(team: str, year: int):
         return saved
 
     finally:
-        db.close()
+        if own_session:
+            db.close()

@@ -1,9 +1,9 @@
 """Pydantic DTOs for odds data validation."""
 
-from pydantic import BaseModel, Field
 from datetime import date, datetime
-from typing import Optional
 from decimal import Decimal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class OddsCreate(BaseModel):
@@ -21,30 +21,28 @@ class OddsCreate(BaseModel):
         ..., max_length=64, description="Sportsbook name (e.g., DraftKings, FanDuel)"
     )
 
-    spread_home: Optional[Decimal] = Field(
+    spread_home: Decimal | None = Field(
         None, description="Point spread for home team (e.g., -7.5)"
     )
-    spread_away: Optional[Decimal] = Field(
+    spread_away: Decimal | None = Field(
         None, description="Point spread for away team (e.g., +7.5)"
     )
 
-    moneyline_home: Optional[int] = Field(
+    moneyline_home: int | None = Field(
         None, description="Moneyline odds for home team (e.g., -150)"
     )
-    moneyline_away: Optional[int] = Field(
+    moneyline_away: int | None = Field(
         None, description="Moneyline odds for away team (e.g., +130)"
     )
 
-    over_under: Optional[Decimal] = Field(
-        None, description="Total points over/under line"
-    )
+    over_under: Decimal | None = Field(None, description="Total points over/under line")
 
     timestamp: datetime = Field(..., description="When this line was recorded")
     is_opening: bool = Field(False, description="Whether this is the opening line")
     is_closing: bool = Field(False, description="Whether this is the closing line")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "season": 2024,
                 "week": 1,
@@ -62,6 +60,7 @@ class OddsCreate(BaseModel):
                 "is_closing": True,
             }
         }
+    )
 
 
 class OddsResponse(BaseModel):
@@ -76,27 +75,26 @@ class OddsResponse(BaseModel):
     away_team: str
     sportsbook: str
 
-    spread_home: Optional[Decimal]
-    spread_away: Optional[Decimal]
+    spread_home: Decimal | None
+    spread_away: Decimal | None
 
-    moneyline_home: Optional[int]
-    moneyline_away: Optional[int]
+    moneyline_home: int | None
+    moneyline_away: int | None
 
-    over_under: Optional[Decimal]
+    over_under: Decimal | None
 
     timestamp: datetime
     is_opening: bool
     is_closing: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OddsQuery(BaseModel):
     """DTO for querying odds data."""
 
-    season: Optional[int] = None
-    week: Optional[int] = None
-    team: Optional[str] = None
-    sportsbook: Optional[str] = None
-    is_closing: Optional[bool] = None
+    season: int | None = None
+    week: int | None = None
+    team: str | None = None
+    sportsbook: str | None = None
+    is_closing: bool | None = None

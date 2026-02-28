@@ -1,8 +1,9 @@
 """Service layer for odds business logic. NO SQL here."""
 
+from datetime import UTC, datetime
+from typing import Any
+
 import httpx
-from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 
 from src.core.config import settings
@@ -23,7 +24,7 @@ class OddsService:
 
     async def fetch_odds_from_api(
         self, sport: str = "americanfootball_nfl", markets: str = "h2h,spreads,totals"
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Fetch current odds from The Odds API.
 
@@ -55,12 +56,12 @@ class OddsService:
 
     def parse_api_response_to_dtos(
         self,
-        api_data: List[Dict[str, Any]],
+        api_data: list[dict[str, Any]],
         season: int,
         week: int,
         is_opening: bool = False,
         is_closing: bool = False,
-    ) -> List[OddsCreate]:
+    ) -> list[OddsCreate]:
         """
         Parse The Odds API response into OddsCreate DTOs.
 
@@ -75,7 +76,7 @@ class OddsService:
             List of validated OddsCreate DTOs
         """
         odds_dtos = []
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         for game in api_data:
             commence_time = datetime.fromisoformat(
@@ -165,7 +166,7 @@ class OddsService:
 
     async def fetch_and_store_current_odds(
         self, season: int, week: int, is_opening: bool = False, is_closing: bool = False
-    ) -> List[int]:
+    ) -> list[int]:
         """
         Fetch current odds from API and store in database.
 
@@ -187,7 +188,7 @@ class OddsService:
         )
 
         # Store in database (skip duplicates)
-        stored_ids: List[int] = []
+        stored_ids: list[int] = []
         for dto in odds_dtos:
             odds_record = OddsRepository.create_or_skip(self.db, dto)
             stored_ids.append(int(odds_record.id))
@@ -196,7 +197,7 @@ class OddsService:
 
     def get_closing_line_value(
         self, season: int, week: int, team: str, sportsbook: str = "consensus"
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Calculate closing line value for a team.
         CLV = difference between your bet and closing line.

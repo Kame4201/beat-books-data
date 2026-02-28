@@ -1,18 +1,18 @@
+import asyncio
 import logging
 
 from bs4 import Tag
 from sqlalchemy.orm import Session
 
-from src.core.database import SessionLocal
 from src.core.scraper_utils import (
     clean_value,
-    fetch_page_with_selenium,
+    fetch_page,
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.passing_stats_dto import PassingStatsCreate
 from src.entities.passing_stats import PassingStats
 from src.repositories.passing_stats_repo import PassingStatsRepository
-from src.dtos.passing_stats_dto import PassingStatsCreate
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ COLUMN_MAP = {
 
 def get_dataframe(season: int) -> list[dict]:
     url = PFR_URL_TEMPLATE.format(season=season)
-    page_source = retry_with_backoff(fetch_page_with_selenium, url, url=url)
+    page_source = retry_with_backoff(fetch_page, url, url=url)
     table = find_pfr_table(page_source, PFR_TABLE_ID)
 
     if table is None:
@@ -97,11 +97,15 @@ def get_dataframe(season: int) -> list[dict]:
     return rows
 
 
-async def scrape_and_store(season: int):
-    db: Session = SessionLocal()
+async def scrape_and_store(season: int, db: Session | None = None):
+    from src.core.database import SessionLocal
+
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
 
     try:
-        parsed = get_dataframe(season)
+        parsed = await asyncio.to_thread(get_dataframe, season)
         repo = PassingStatsRepository(db)
 
         saved = []
@@ -115,4 +119,5 @@ async def scrape_and_store(season: int):
         return saved
 
     finally:
-        db.close()
+        if own_session:
+            db.close()

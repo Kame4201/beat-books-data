@@ -11,7 +11,7 @@ Activated only when SCRAPE_BACKEND=scrapling.
 import logging
 import random
 import time
-from typing import Literal, Optional, cast
+from typing import Literal, cast
 
 from src.core.config import settings
 
@@ -27,7 +27,7 @@ Impersonate = Literal[
 ]
 
 
-def _coerce_impersonate(value: str | None) -> Optional[Impersonate]:
+def _coerce_impersonate(value: str | None) -> Impersonate | None:
     if not value:
         return None
     v = value.strip().lower()
@@ -46,7 +46,7 @@ def _coerce_impersonate(value: str | None) -> Optional[Impersonate]:
 logger = logging.getLogger(__name__)
 
 
-def _get_proxy() -> Optional[str]:
+def _get_proxy() -> str | None:
     """Return a proxy URL if proxy rotation is enabled, else None."""
     if not settings.SCRAPE_USE_PROXY or not settings.SCRAPE_PROXY_LIST:
         return None
@@ -74,6 +74,7 @@ def fetch_page_with_scrapling(url: str) -> str:
         RuntimeError: If the fetch returns an empty/error response
     """
     from scrapling.fetchers import Fetcher, StealthyFetcher
+
     from src.core.scraper_utils import strip_url_hash
 
     clean_url = strip_url_hash(url)

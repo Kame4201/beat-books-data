@@ -1,14 +1,15 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import Generic, TypeVar, Type, Optional, Any
-from sqlalchemy.orm import Session
+from typing import Any, Generic, TypeVar
+
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 T = TypeVar("T")
 
 
 class BaseRepository(Generic[T]):
-    def __init__(self, session: Session, model: Type[T]) -> None:
+    def __init__(self, session: Session, model: type[T]) -> None:
         self.session = session
         self.model = model
 
@@ -19,7 +20,7 @@ class BaseRepository(Generic[T]):
             self.session.refresh(obj)
         return obj
 
-    def get_by_id(self, id_: Any) -> Optional[T]:
+    def get_by_id(self, id_: Any) -> T | None:
         return self.session.get(self.model, id_)
 
     def list(self, *, limit: int = 100, offset: int = 0) -> list[T]:

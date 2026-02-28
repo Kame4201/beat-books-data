@@ -1,18 +1,18 @@
+import asyncio
 import logging
 
 from bs4 import Tag
 from sqlalchemy.orm import Session
 
-from src.core.database import SessionLocal
 from src.core.scraper_utils import (
     clean_value,
-    fetch_page_with_selenium,
+    fetch_page,
     find_pfr_table,
     retry_with_backoff,
 )
+from src.dtos.standings_dto import StandingsCreate
 from src.entities.standings import Standings
 from src.repositories.standings_repo import StandingsRepository
-from src.dtos.standings_dto import StandingsCreate
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ def _parse_table(table: Tag, season: int) -> list[dict]:
 
 def get_dataframe(season: int) -> list[dict]:
     url = PFR_URL_TEMPLATE.format(season=season)
-    page_source = retry_with_backoff(fetch_page_with_selenium, url, url=url)
+    page_source = retry_with_backoff(fetch_page, url, url=url)
 
     all_rows = []
     for table_id in PFR_TABLE_IDS:
@@ -85,11 +85,15 @@ def get_dataframe(season: int) -> list[dict]:
     return all_rows
 
 
-async def scrape_and_store(season: int):
-    db: Session = SessionLocal()
+async def scrape_and_store(season: int, db: Session | None = None):
+    from src.core.database import SessionLocal
+
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
 
     try:
-        parsed = get_dataframe(season)
+        parsed = await asyncio.to_thread(get_dataframe, season)
         repo = StandingsRepository(db)
 
         saved = []
@@ -103,4 +107,5 @@ async def scrape_and_store(season: int):
         return saved
 
     finally:
-        db.close()
+        if own_session:
+            db.close()

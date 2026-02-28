@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.entities.games import Games
 from src.repositories.base_repo import BaseRepository
@@ -14,6 +14,7 @@ class GamesRepository(BaseRepository[Games]):
     def find_by_season(
         self,
         season: int,
+        week: int | None = None,
         *,
         limit: int = 300,
         offset: int = 0,
@@ -22,6 +23,9 @@ class GamesRepository(BaseRepository[Games]):
     ) -> list[Games]:
         """Find all games for a given season with pagination and sorting."""
         stmt = select(self.model).where(self.model.season == season)
+
+        if week is not None:
+            stmt = stmt.where(self.model.week == week)
 
         sort_column = getattr(self.model, sort_by, None)
         if sort_column is not None:
@@ -33,7 +37,7 @@ class GamesRepository(BaseRepository[Games]):
         stmt = stmt.limit(limit).offset(offset)
         return list(self.session.execute(stmt).scalars().all())
 
-    def count_by_season(self, season: int) -> int:
+    def count_by_season(self, season: int, week: int | None = None) -> int:
         """Count total games for a season."""
         from sqlalchemy import func
 
@@ -42,4 +46,6 @@ class GamesRepository(BaseRepository[Games]):
             .select_from(self.model)
             .where(self.model.season == season)
         )
+        if week is not None:
+            stmt = stmt.where(self.model.week == week)
         return self.session.execute(stmt).scalar() or 0

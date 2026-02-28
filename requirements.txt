@@ -15,12 +15,17 @@ sqlalchemy
 psycopg2-binary
 alembic
 
+# JWT auth
+python-jose[cryptography]
+passlib[bcrypt]
+
 # If scraping code uses aiohttp or requests, include these:
 requests
 beautifulsoup4
 lxml
 aiohttp
 
+# Data processing and scraping
 pandas
 selenium
 selenium-stealth

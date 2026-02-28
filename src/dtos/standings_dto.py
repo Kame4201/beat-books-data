@@ -3,7 +3,7 @@ DTOs for standings operations.
 """
 
 from decimal import Decimal
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -13,18 +13,18 @@ class StandingsCreate(BaseModel):
     season: int = Field(..., ge=1920, le=2100, description="Season year")
 
     tm: str = Field(..., min_length=1, max_length=64, description="Team name")
-    w: Optional[int] = Field(None, ge=0, description="Wins")
-    l: Optional[int] = Field(None, ge=0, description="Losses")  # noqa: E741
-    t: Optional[int] = Field(None, ge=0, description="Ties")
-    win_pct: Optional[Decimal] = Field(None, ge=0, le=1, description="Win percentage")
-    pf: Optional[int] = Field(None, ge=0, description="Points for")
-    pa: Optional[int] = Field(None, ge=0, description="Points against")
-    pd: Optional[int] = Field(None, description="Point differential")
-    mov: Optional[Decimal] = Field(None, description="Margin of victory")
-    sos: Optional[Decimal] = Field(None, description="Strength of schedule")
-    srs: Optional[Decimal] = Field(None, description="Simple rating system")
-    osrs: Optional[Decimal] = Field(None, description="Offensive SRS")
-    dsrs: Optional[Decimal] = Field(None, description="Defensive SRS")
+    w: int | None = Field(None, ge=0, description="Wins")
+    l: int | None = Field(None, ge=0, description="Losses")  # noqa: E741
+    t: int | None = Field(None, ge=0, description="Ties")
+    win_pct: Decimal | None = Field(None, ge=0, le=1, description="Win percentage")
+    pf: int | None = Field(None, ge=0, description="Points for")
+    pa: int | None = Field(None, ge=0, description="Points against")
+    pd: int | None = Field(None, description="Point differential")
+    mov: Decimal | None = Field(None, description="Margin of victory")
+    sos: Decimal | None = Field(None, description="Strength of schedule")
+    srs: Decimal | None = Field(None, description="Simple rating system")
+    osrs: Decimal | None = Field(None, description="Offensive SRS")
+    dsrs: Decimal | None = Field(None, description="Defensive SRS")
 
 
 class StandingsResponse(StandingsCreate):
