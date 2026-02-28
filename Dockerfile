@@ -15,6 +15,10 @@ RUN uv sync --frozen --no-dev
 # Copy the rest of the application
 COPY . .
 
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
 EXPOSE 8001
 
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8001"]
